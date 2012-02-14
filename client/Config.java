@@ -11,8 +11,7 @@ public class Config
     /**
      * Liste des paramètres
      */
-    //private ArrayList _config;
-    private Map _config;
+    private Map<String, Object> _config;
 
     /**
      * Instance du singleton
@@ -25,20 +24,20 @@ public class Config
      */
     private Config()
     {
-        _config = new HashMap();
+        _config = new HashMap<String, Object>();
     }
 
     /**
      * Renvoi la valeur du paramètre spécifié
      */
-    public V get(String param)
+    public Object get(String param)
     {
         return _config.get(param);
     }
 
-    public void set(String param, V value)
+    public void set(String param, Object value)
     {
-        _instance.put(param, value);
+        _config.put(param, value);
     }
 
     /**
