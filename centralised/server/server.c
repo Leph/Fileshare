@@ -6,7 +6,7 @@
 #include <pthread.h>
 
  
-#define TAILLE_MAX_BUF 200
+#define TAILLE_MAX_BUF 1000
 #define MAX_CLIENTS 10					 
  
  
@@ -79,7 +79,7 @@ int main(int argc, char *argv[])
 			exit(EXIT_FAILURE);
 		}
 	       
-	int creation_thread = pthread_create(&thread[compteur],NULL,fn_thread,(void *)socket_service);
+	int thread_client = pthread_create(&thread[compteur],NULL,fn_thread,(void *)socket_service);
 
 	if(creation_thread!=0)
 	{
