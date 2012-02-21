@@ -15,7 +15,9 @@
 
 struct client
 {
-	//infos..
+	struct file files[NBR_FICHIERS_MAX];
+	int nbr_fichiers;
+	struct sockaddr_in addr_client;
 	struct client *prev;
 	struct client *next;
 };
