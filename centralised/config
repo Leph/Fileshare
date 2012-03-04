@@ -1,0 +1,10 @@
+#test
+abc = 4
+
+av= A
+test= 3.14
+
+
+PieceSize=1024
+fileDir=downloads/files/
+tmpDir=downloads/tmp/
