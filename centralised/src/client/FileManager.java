@@ -29,7 +29,14 @@ public class FileManager {
 	
 	public FileManager(){
 		fileDir = (String)Config.config().get("fileDir");
+		File f = new File(fileDir);
+		if (!f.exists() && !f.isDirectory())
+			f.mkdir();
+			
 		tmpDir = (String)Config.config().get("tmpDir");
+		f = new File(tmpDir);
+		if (!f.exists())
+			f.mkdir();
 		pieceSize = ((Long)Config.config().get("PieceSize")).longValue();
 		String[] fileNameList = new File(fileDir).list();
 		fileList = new ArrayList<FileWithInfo>(fileNameList.length);
