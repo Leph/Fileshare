@@ -35,9 +35,11 @@ public class Main
     		System.out.println("*****************************************************");
     		System.out.println("seed: " + fm.listSeedKey());
         	System.out.println("leech: " + fm.listLeechKey());
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
+	} catch (Exception e) {
+		e.printStackTrace();
+	}
+	System.out.println("================test FileManager over ==================");
+	System.out.println("don't forget to remove " + newFileName + " in downloads/files/ before next execution!");
     }
 }
 

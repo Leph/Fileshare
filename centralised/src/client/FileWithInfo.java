@@ -1,5 +1,5 @@
 /**
- * Cette classe contient les information n®¶cessaires d'un fichier
+ * Cette classe contient les information necessaires d'un fichier
  */
 package client;
 
@@ -16,13 +16,13 @@ public class FileWithInfo extends File {
 	
 	String key;
 	boolean[] buffermap;
-	int rest; // Nb de pi®®ces manquants.
+	int rest; // Nb de pieces manquants.
 	
 	/**
-	 * Cr®¶ation d'un fichier existant
+	 * Creation d'un fichier existant
 	 * 
 	 * @param pathname			nom de path
-	 * @throws NoSuchAlgorithmException		si l'algo md5 n'est pas support®¶ par la machine 
+	 * @throws NoSuchAlgorithmException		si l'algo md5 n'est pas supporte par la machine 
 	 */
 	public FileWithInfo(String pathname) throws NoSuchAlgorithmException {
 		super(pathname);
@@ -49,10 +49,10 @@ public class FileWithInfo extends File {
 	}
 	
 	/**
-	 * Cr®¶ation d'un fichier ®§ t®¶l®¶charger 
+	 * Creation d'un fichier a telecharger 
 	 * 
 	 * @param pathname		nom de path
-	 * @param key			cl®¶f md5
+	 * @param key			clef md5
 	 * @param fileSize		taille de fichier
 	 */
 	public FileWithInfo(String pathname, String key, long fileSize){
@@ -62,11 +62,11 @@ public class FileWithInfo extends File {
 	}
 	
 	/**
-	 * G®¶n®¶rer une cl®¶f pour un nom de fichier en entr®¶e en utilisant l'algorithme md5 
+	 * Genener une clef pour un nom de fichier en entree en utilisant l'algorithme md5 
 	 * 
 	 * @param filename		le nom d'un fichier
-	 * @return  			une chaine de bits qui est la cl√© g√©n√©r√©e
-	 * @throws NoSuchAlgorithmException 	si l'algo md5 n'est pas support®¶ par la machine 
+	 * @return  			une chaine de bits qui est la clef generee
+	 * @throws NoSuchAlgorithmException 	si l'algo md5 n'est pas supporte par la machine 
 	 */
 	public static String getKey(String filename) throws NoSuchAlgorithmException{
 		MessageDigest m=MessageDigest.getInstance("MD5");

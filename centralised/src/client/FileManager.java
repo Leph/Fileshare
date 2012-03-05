@@ -17,12 +17,12 @@ import java.util.ArrayList;
 public class FileManager {
 	
 	/**
-	 * list de fichiers locaux + virtuels (en train de télécharger)
+	 * list de fichiers locaux + virtuels (en train de telecharger)
 	 */
 	ArrayList<FileWithInfo> fileList;
 	// repertoire contenant les fichiers locaux
 	private String fileDir;
-	// repertoire contenant les pièces de fichiers qui sont en train de télécharger 
+	// repertoire contenant les pieces de fichiers qui sont en train de telecharger 
 	private String tmpDir;
 	private long pieceSize;
 	private static FileManager instance = null;
@@ -55,8 +55,8 @@ public class FileManager {
 	}
 	
 	/**
-	 * Crée une instance de fichier virtuel  (fichier à télécharger)
-	 * Cette méthode doit être appelée avant de faire getData ou savePiece sur ce fichier
+	 * Cree une instance de fichier virtuel  (fichier a charger)
+	 * Cette methode doit etre appelee avant de faire getData ou savePiece sur ce fichier
 	 * 
 	 * @param filename
 	 * @param key
@@ -70,7 +70,7 @@ public class FileManager {
 	}
 	
 	/**
-	 * Trouve l'instance de fichier avec le nom spécifié 
+	 * Trouve l'instance de fichier avec le nom specifie 
 	 * 
 	 * @param filename		nom de fichier 
 	 * @return	l'instance de fichier (existant ou virtuel)
@@ -91,11 +91,11 @@ public class FileManager {
 	}
 	
 	/**
-	 * Récupère un morceau de données dans un fichier
+	 * Recupere un morceau de donnees dans un fichier
 	 * 
 	 * @param filename		un fichier existant
 	 * @param index			index de buffermap correspondant
-	 * @return des données de longueur au plus $PieceSize$ dans le fichier filename commençant par la position (index*$PieceSize$)
+	 * @return des donnees de longueur au plus $PieceSize$ dans le fichier filename commencant par la position (index*$PieceSize$)
 	 * @throws FileNotFoundException	s'il n'y a pas de fichier de tel nom
 	 * @throws IOException 				si l'utilisateur n'a pas de droit de lire ce fichier
 	 */
@@ -108,14 +108,14 @@ public class FileManager {
 		else
 			buffer = new byte[(int)pieceSize];
 		if (f.rest == 0){
-			// si f est un fichier dans le disque, lire dans ce fichier
+			// si f est un fichier dans le disque, lit dans ce fichier
 			FileInputStream fis = new FileInputStream(f);
 			fis.skip(index * pieceSize);
 			fis.read(buffer);
 			fis.close();
 			return buffer;
 		}else{
-			// sinon, f est sous forme pièces, récupérer directement "tmp/filename.$index"
+			// sinon, f est sous forme pieces, recupere directement "tmp/filename.$index"
 			FileInputStream fis = new FileInputStream(tmpDir+filename+".$"+index);
 			fis.read(buffer);
 			return buffer;
@@ -123,17 +123,17 @@ public class FileManager {
 	}
 	
 	/**
-	 * Enregistre une pièce d'un fichier virtuel (en train de télécharger)
+	 * Enregistre une piece d'un fichier virtuel (en train de telecharger)
 	 * 
 	 * @param filename		nom de fichier virtuel
 	 * @param index			index de buffermap correspondant 
-	 * @param data			des données à stocker 
-	 * @return 				faux si la pièce de ce fichier existe déjà (éviter les données dupliquées) 
-	 * @throws IOException	normalement, ça ne doit pas se passer 
+	 * @param data			des donnees a stocker 
+	 * @return  faux si la piece de ce fichier existe deja (eviter les donnees dupliquees) 
+	 * @throws IOException	normalement, cela ne doit pas se passer 
 	 */
 	public boolean savePiece(String filename, int index, byte[] data) throws IOException{
-		// Enregister les données dans un nouveau fichier "tmp/filename.$index"
-		// Si cela existe déjà ,retourne false
+		// Enregister les donnees dans un nouveau fichier "tmp/filename.$index"
+		// Si cela existe deja ,retourne false
 		File tmpFile = new File(tmpDir+filename+".$"+index);
 		if (tmpFile.exists())
 			return false;
@@ -141,7 +141,7 @@ public class FileManager {
 			tmpFile.createNewFile();
 			// debug
 			System.out.println("file: " + tmpFile + " created");
-			//écrit données 
+			// ecrit donnees 
 			FileOutputStream fout = new FileOutputStream(tmpFile);
 			fout.write(data);
 			fout.flush();
@@ -150,7 +150,7 @@ public class FileManager {
 			FileWithInfo f = findFile(filename);
 			f.buffermap[index] = true;
 			f.rest--;
-			// tester si le fichier est completement téléchargé 
+			// tester si le fichier est completement telecharge 
 			if (f.rest == 0)
 				fusionFile(f);
 			return true;
@@ -159,10 +159,10 @@ public class FileManager {
 	}
 	
 	/**
-	 * Fusionne des pieces d'un fichier s'il est terminé de télécharger
+	 * Fusionne des pieces d'un fichier s'il est termine de telecharger
 	 * 
 	 * @param file			l'instance de fichier virtuel
-	 * @throws IOException	si le fichier virtuel existe déjà dans le disque. 
+	 * @throws IOException	si le fichier virtuel existe deja dans le disque. 
 	 */
 	private void fusionFile(FileWithInfo file) throws IOException{
 		file.createNewFile();
@@ -186,9 +186,9 @@ public class FileManager {
 	}
 	
 	/**
-	 * Informe une liste de clés des fichiers locaux 
+	 * Informe une liste de cles des fichiers locaux 
 	 * 
-	 * @return	une chaîne de caractère qui contient la liste de clés des fichiers locaux 
+	 * @return	une chaine de caractere qui contient la liste de cles des fichiers locaux 
 	 */
 	public String listSeedKey(){
 		StringBuffer buffer = new StringBuffer("");
@@ -199,9 +199,9 @@ public class FileManager {
 	}
 	
 	/**
-	 * Informe une liste de clés des fichiers en train de télécharger  
+	 * Informe une liste de cles des fichiers en train de telecharger  
 	 * 
-	 * @return	une chaîne de caractère qui contient la liste de clés des fichiers en train de télécharger
+	 * @return	une chaine de caractere qui contient la liste de cles des fichiers en train de telecharger
 	 */
 	public String listLeechKey(){
 		StringBuffer buffer = new StringBuffer("");
@@ -213,7 +213,7 @@ public class FileManager {
 	
 	/**
 	 * Affichier les infomations des fichiers locaux
-	 * Servira à envoyer des informations au tracker au début  
+	 * Servira a envoyer des informations au tracker au debut  
 	 */
 	@Override
 	public String toString(){
