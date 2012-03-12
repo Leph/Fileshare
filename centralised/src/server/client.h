@@ -11,12 +11,13 @@
 #include <string.h>     /* for memset() */
 #include <unistd.h>     /* for close() */
 
-
+#define NBR_FICHIERS_MAX 1000
 
 struct client
 {
 	struct file files[NBR_FICHIERS_MAX];
 	int nbr_fichiers;
+        int nbr_files_max;
 	struct sockaddr_in addr_client;
 	struct client *prev;
 	struct client *next;

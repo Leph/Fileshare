@@ -1,0 +1,49 @@
+#include <string.h>
+#include <stdlib.h>
+#include <stdio.h>
+#include "file.h"
+
+struct file init_file(char* name,int file_size, int part_size, char* key){
+  struct file f;
+  strcpy(f.name,name);
+  f.size=file_size;
+  f.part_size=part_size;
+  strcpy(f.key,key);
+  return f;
+}
+
+
+void add_file(struct client* c,struct file f){
+  if(c->nbr_fichiers==NBR_FICHIERS_MAX)
+    ;
+  client->files[c->nbr_fichiers]=f;
+  c->nbr_fichiers++;
+  
+}
+
+void add_file(struct client* c,struct file* f,int n){
+  for(int i=0;i<n;i++)
+    add_file(c,f[i]);
+  
+}
+
+void remove_file(struct client* c, struct file f){
+  
+
+}
+
+struct c* getfile(struct queue* queue,char *key){
+  struct client *current = queue->first;
+  printf("peers %s  [",key);
+  while(current!=NULL){
+    for(int i=0;i<current->nbr_fichiers_max;i++)
+      if( strcmp(key,current->files[i])==0)
+	//printf de ip et n° port
+  }
+}
+
+struct file* look(struct queue* queue,char * name,){
+
+
+}
+ 
