@@ -15,11 +15,6 @@ public class Config
     private Map<String, Object> _config;
 
     /**
-     * Instance du singleton
-     */
-    private static Config _instance;
-
-    /**
      * Constructeur : initialisation
      * des valeurs par défaut
      */
@@ -115,18 +110,5 @@ public class Config
             System.out.println(mapKey+" = "+_config.get(mapKey));
         }
     }
-
-    /**
-     * Renvoi l'instance de configuration
-     */
-    /*
-    public static Config config()
-    {
-        if (_instance == null) {
-            _instance = new Config();
-        }
-        return _instance;
-    }
-    */
 }
 

@@ -16,5 +16,15 @@ class App
     public static void main(String args[])
     {
         App.config.load("config");
+        Config.config().print();
+
+        test();
+    }
+
+    /**
+     * Fonction de debug/tests
+     */
+    public static void test()
+    {
     }
 }
