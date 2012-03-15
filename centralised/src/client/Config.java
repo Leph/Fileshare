@@ -1,7 +1,6 @@
 /**
  * Contient la configuration actuelle du programme
  * Gère le fichier de configuration
- * Pattern Singleton
  */
 package client;
 
@@ -24,7 +23,7 @@ public class Config
      * Constructeur : initialisation
      * des valeurs par défaut
      */
-    private Config()
+    public Config()
     {
         _config = new HashMap<String, Object>();
     }
@@ -120,6 +119,7 @@ public class Config
     /**
      * Renvoi l'instance de configuration
      */
+    /*
     public static Config config()
     {
         if (_instance == null) {
@@ -127,5 +127,6 @@ public class Config
         }
         return _instance;
     }
+    */
 }
 
