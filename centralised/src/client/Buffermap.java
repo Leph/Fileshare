@@ -20,6 +20,7 @@ class Buffermap
 
     /**
      * Contruit le buffermap connaissant sa taille
+     * Initialisation de toutes les pieces à 0
      */
     public Buffermap(long size)
     {
