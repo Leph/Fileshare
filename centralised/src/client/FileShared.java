@@ -312,5 +312,83 @@ class FileShared extends File
 
         return result;
     }
+
+    /**
+     * Lis et retourne une pièce depuis le fichier 
+     * complet sur le disque
+     * @param num : numéros de la piece
+     */
+    private byte[] readPieceCompleteFile(long num)
+    {
+        if (num < 0 || num >= this.nbPiece()) {
+            throw new IllegalArgumentException();
+        }
+        
+        FileInputStream reader_tmp = new FileInputStream(this);
+        BufferedInputStream reader = new BufferedInputStream(reader_tmp);
+
+        byte[] piece = new byte[_piecesize];
+        reader.read(piece, _piecesize*num, _piecesize); 
+        reader.close();
+
+        return piece;
+    }
+
+    /**
+     * Lis et retourne une piece depuis le fichier
+     * temporaire sur le disque (la piece doit exister)
+     * @param num : numéros de la piece
+     */
+    private byte[] readPieceTmpFile(long num)
+    {
+        if (num < 0 || num >= this.nbPiece()) {
+            throw new IllegalArgumentException();
+        }
+
+        FileInputStream reader_tmp = new FileInputStream(this);
+        BufferedInputStream reader = new BufferedInputStream(reader_tmp);
+
+        byte[] tmp = new byte[8];
+        reader.read(tmp, 8 + _key.length + 8 + 8 + 8*num, 8);
+        long index_piece = Tools.bytesToLong(tmp);
+        if (index_piece < 0) {
+            throw new IllegalArgumentException();
+        }
+
+        byte[] piece = new byte[_piecesize];
+        reader.read(piece, this.headerSize() + _piecesize*num, _piecesize); 
+        reader.close();
+
+        return piece;
+    }
+
+    /**
+     * Ecrit la piece donnée dans le fichier
+     * temporaire sur le disque
+     * @param piece : pièce à écrire
+     * @param num : numéros de la pièce
+     */
+    private void writePieceTmpFile(byte[] piece, long num)
+    {
+        if (num < 0 || num >= this.nbPiece()) {
+            throw new IllegalArgumentException();
+        }
+        if (piece.length > _piecesize) {
+            throw new IllegalArgumentException();
+        }
+        
+        FileOutputStream writer_tmp = new FileOutputStream(this);
+        BufferedOutputStream writer = new BufferedOutputStream(writer_tmp);
+
+        long index_piece = (this.length() - this.headerSize()) / _piecesize;
+
+        if (piece.length < _piecesize) {
+            byte[] tmp = new byte[_piecesize];
+        }
+        writer.write(piece, );//PPRROOBBLLEEMMEE
+        
+        writer.flush();
+        writer.close();
+    }
 }
 
