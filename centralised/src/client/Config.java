@@ -2,7 +2,6 @@
  * Contient la configuration actuelle du programme
  * Gère le fichier de configuration
  */
-package client;
 
 import java.util.*;
 import java.io.*;

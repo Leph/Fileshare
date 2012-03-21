@@ -16,7 +16,7 @@ class App
     public static void main(String args[])
     {
         App.config.load("config");
-        Config.config().print();
+        App.config.print();
 
         test();
     }

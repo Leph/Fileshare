@@ -3,6 +3,7 @@
  * partage
  */
 
+import java.io.*;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
@@ -21,7 +22,7 @@ class FileShared extends File
     /**
      * Taille des pieces
      */
-    private _piecesize;
+    private long _piecesize;
 
    /**
     * Buffermap du fichier
@@ -245,10 +246,10 @@ class FileShared extends File
         for (i=0;i<this.nbPieces();i++) {
             reader.read(tmp, offset, 8);
             if (Tools.bytesToLong(tmp) >= 0) {
-                _buffermap.setBit(i, 1);_
+                _buffermap.setBit(i, 1);
             }
             else {
-                _buffermap.setBit(i, 0);_
+                _buffermap.setBit(i, 0);
             }
             offset += 8;
         }
@@ -384,8 +385,10 @@ class FileShared extends File
 
         if (piece.length < _piecesize) {
             byte[] tmp = new byte[_piecesize];
+            piece = Array.copyOf(piece, _piecesize);
         }
-        writer.write(piece, );//PPRROOBBLLEEMMEE
+        writer.write(Tools.longToBytes(index_piece), 8 + _key.length + 8 + 8 + 8*num, 8);
+        writer.write(piece, this.headerSize() + _piecesize*index_piece, _piecesize);
         
         writer.flush();
         writer.close();

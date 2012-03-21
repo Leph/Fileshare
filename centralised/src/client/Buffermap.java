@@ -22,7 +22,7 @@ class Buffermap
      * Contruit le buffermap connaissant sa taille
      * Initialisation de toutes les pieces à 0
      */
-    public Buffermap(long size)
+    public Buffermap(int size)
     {
         _buffer = new byte[size];
         int i;
@@ -34,7 +34,7 @@ class Buffermap
     /**
      * Renvoi la taille du buffermap
      */
-    public long size()
+    public int size()
     {
         return _buffer.length;
     }
@@ -42,7 +42,7 @@ class Buffermap
     /**
      * Renvoi le nombre de bits du buffermap
      */
-    public long bitSize()
+    public int bitSize()
     {
         return size() * 8;
     }
@@ -51,31 +51,32 @@ class Buffermap
      * Renvoi la valeur du bit demandé
      * la numérotation commence à 0
      */
-    public boolean getBit(long n)
+    public boolean getBit(int n)
     {
         if (n < 0 || n >= bitSize()) {
             throw new IndexOutOfBoundsException();
         }
 
-        long numByte = n / 8;
-        long numBit = n % 8;
+        int numByte = n / 8;
+        byte numBit = (byte)(n % 8);
         byte mask = 0x1;
 
-        return (boolean)((mask << numBit) & _buffer[numByte]);
+        boolean bit = ((mask << numBit) & _buffer[numByte]) > 0 ? true : false;
+        return bit;
     }
 
     /**
      * Enregistre une valeur pour un bit donné
      */
-    public void setBit(long n, boolean val)
+    public void setBit(int n, boolean val)
     {
         if (n < 0 || n >= bitSize()) {
             throw new IndexOutOfBoundsException();
         }
         
         
-        long numByte = n / 8;
-        long numBit = n % 8;
+        int numByte = n / 8;
+        byte numBit = (byte)(n % 8);
 
         if (val) {
             byte mask = 0x1;
