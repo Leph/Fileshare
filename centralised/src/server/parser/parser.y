@@ -35,25 +35,12 @@ struct commandLine command;
 %start commande
 %%
 
-
-
-
-
-
-
-
 commande
 : announce_commande
 | look_commande
 | getfile_commande
 | update_commande
 ;
-   
-
-
-
-
-
  
 announce_commande
 : TANNOUNCE TLISTEN NUMBER THAVE '[' fileinfo_list ']'
@@ -80,12 +67,6 @@ fileinfo
 ;
 
 
-
-
-
-
-
-
 look_commande
 : TLOOK criterion_list_declaration
 {
@@ -98,7 +79,7 @@ criterion_list_declaration
 ;
 
 criterion_list
-: criterion criterion
+: criterion criterion_list
 | criterion
 ;
 
@@ -173,6 +154,7 @@ seed_declaration
 {
 	command.isSeeder = 1;
 }
+| TSEED '[' ']'
 ;
 
 leech_declaration
@@ -180,6 +162,7 @@ leech_declaration
 {
 	command.isLeecher = 1;
 }
+| TLEECH '[' ']'
 ;
 
 seed_list

@@ -6,6 +6,10 @@
 #define MAX_FILES_NUMBER 20
 
 enum type {ANNOUNCE=1,LOOK=2,GETFILE=3,UPDATE=4};
+char *globalInputText;                                                                                                
+int yyparse();                                                                                                        
+struct commandLine command;
+int globalReadOffset;  
 
 struct commandLine
 {
@@ -34,7 +38,10 @@ struct commandLine
 
 
 int readInputForLexer(char* buffer,int *numBytesRead,int maxBytesToRead);
-void affiche();
+void affiche(struct commandLine*);
 int free_commandLine();
+struct commandLine *cloneCommandLine();
+void initCommandLine();
+void freeCommandLine();
 
 #endif
