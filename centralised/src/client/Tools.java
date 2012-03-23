@@ -3,21 +3,23 @@
  * utilitaires accessibles en static
  */
 
+import java.nio.*;
+
 class Tools
 {
-    private static byte[] longToBytes(long n)
+    public static byte[] intToBytes(int n)
     {
         ByteBuffer bb = ByteBuffer.allocate(8);
-        bb.putLong(n);
+        bb.putInt(n);
         return bb.array();
     }
 
-    private static byte[] stringToBytes(String s)
+    public static byte[] stringToBytes(String s)
     {
         return s.getBytes();
     }
 
-    private static long bytesToLong(byte[] b)
+    public static int bytesToInt(byte[] b)
     {
         if (b.length != 8) {
             throw new IllegalArgumentException();
@@ -25,12 +27,12 @@ class Tools
 
         ByteBuffer bb = ByteBuffer.allocate(8);
         bb.put(b);
-        return bb.getLong();
+        return bb.getInt();
     }
 
-    private static String bytesToString(byte[] b)
+    public static String bytesToString(byte[] b)
     {
-        return String(b);
+        return new String(b);
     }
 }
 

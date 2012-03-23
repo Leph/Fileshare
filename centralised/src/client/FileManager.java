@@ -4,8 +4,6 @@
  * Cette classe s'occupe de la gestion de fichiers
  */
 
-package client;
-
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -28,16 +26,16 @@ public class FileManager {
 	private static FileManager instance = null;
 	
 	public FileManager(){
-		fileDir = (String)Config.config().get("fileDir");
+		fileDir = (String)App.config().get("fileDir");
 		File f = new File(fileDir);
 		if (!f.exists() && !f.isDirectory())
 			f.mkdir();
 			
-		tmpDir = (String)Config.config().get("tmpDir");
+		tmpDir = (String)App.config().get("tmpDir");
 		f = new File(tmpDir);
 		if (!f.exists())
 			f.mkdir();
-		pieceSize = ((Long)Config.config().get("PieceSize")).longValue();
+		pieceSize = ((Integer)App.config().get("PieceSize")).longValue();
 		String[] fileNameList = new File(fileDir).list();
 		fileList = new ArrayList<FileWithInfo>(fileNameList.length);
 		try {

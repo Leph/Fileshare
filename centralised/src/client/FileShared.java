@@ -4,8 +4,9 @@
  */
 
 import java.io.*;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
+import java.util.*;
+import java.lang.*;
+import java.security.*;
 
 class FileShared extends File
 {
@@ -17,12 +18,12 @@ class FileShared extends File
     /**
      * Taille du fichier
      */
-    private long _size;
+    private int _size;
 
     /**
      * Taille des pieces
      */
-    private long _piecesize;
+    private int _piecesize;
 
    /**
     * Buffermap du fichier
@@ -46,16 +47,18 @@ class FileShared extends File
      */
     public FileShared(String name)
     {
-        String path;
-        if (name.endWith(App.config.get("tmpExtension"))) {
+        super(
+            name.endsWith((String)App.config.get("tmpExtension")) ? 
+            App.config.get("tmpDir") + File.pathSeparator + name : 
+            App.config.get("downloadDir") + File.pathSeparator + name
+        );
+
+        if (name.endsWith((String)App.config.get("tmpExtension"))) {
             _iscomplete = false;
-            path = App.config.get("tmpDir") + File.pathSeparator + name;
         }
         else {
-            _iscomplet = true;
-            path = App.config.get("downloadDir") + File.pathSeparator + name;
+            _iscomplete = true;
         }
-        super(path);
 
         if (!this.exists()) {
             throw new IllegalArgumentException();
@@ -72,12 +75,16 @@ class FileShared extends File
      * @param size : sa taille
      * @param piecesize : la taiile de ses pieces
      */
-    public FileShared(String name, String key, long size, long piecesize)
+    public FileShared(String name, String key, int size, int piecesize)
     {
-        String path = App.config.get("tmpDir") + File.pathSeparator + name + App.config.get("tmpExtension");
-        super(path);
+        super(
+            App.config.get("tmpDir") + 
+            File.pathSeparator + 
+            name + 
+            App.config.get("tmpExtension")
+        );
 
-        if (this.exits()) {
+        if (this.exists()) {
             throw new IllegalArgumentException();
         }
 
@@ -86,7 +93,7 @@ class FileShared extends File
         _piecesize = piecesize;
         _iscomplete = false;
         
-        long buffersize = _size / _piecesize;
+        int buffersize = _size / _piecesize;
         if ((_size % _piecesize) > 0) buffersize++;
         if ((buffersize % 8) == 0) {
             buffersize = buffersize / 8;
@@ -109,7 +116,7 @@ class FileShared extends File
     /**
      * Renvoi la taille total
      */
-    public long getSize()
+    public int getSize()
     {
         return _size;
     }
@@ -117,7 +124,7 @@ class FileShared extends File
     /**
      * Renvoi la taille des pièces
      */
-    public long getPieceSize()
+    public int getPieceSize()
     {
         return _piecesize;
     }
@@ -133,9 +140,9 @@ class FileShared extends File
     /**
      * Renvoi le nombre de pièce du fichier
      */
-    public long nbPieces()
+    public int nbPieces()
     {
-        long nb = _size / _piecesize;
+        int nb = _size / _piecesize;
         if ((_size % _piecesize) == 0) {
             return nb;
         }
@@ -146,16 +153,16 @@ class FileShared extends File
 
     /**
      * Structure du header des fichiers temporaires :
-     * long   : taille de la clef en octets
+     * int   : taille de la clef en octets
      * string : key
-     * long   : size
-     * long   : piece size
+     * int   : size
+     * int   : piece size
      * //buffermap : le num correspond à la position de la piece dans le fichier tmp
      * // -1 : non présente
-     * long   : num piece 1
-     * long   : num piece 2
+     * int   : num piece 1
+     * int   : num piece 2
      * ***
-     * long   : num piece n
+     * int   : num piece n
      * //DATA
      * [piece num 1]
      * [piece num 2]
@@ -165,9 +172,9 @@ class FileShared extends File
     /**
      * Renvoi la taille du header du fichier temporaire
      */
-    private long headerSize()
+    private int headerSize()
     {
-        return 8 + _key.length + 8 + 8  + 8*this.nbPieces();
+        return 4 + _key.length() + 4 + 4  + 4*this.nbPieces();
     }
 
     /**
@@ -175,32 +182,37 @@ class FileShared extends File
      */
     private void initHeaderTmpFile()
     {
-        FileOutputStream writer_tmp = new FileOutputStream(this);
-        BufferedOutputStream writer = new BufferedOutputStream(writer_tmp);
+        try {
+            FileOutputStream writer_tmp = new FileOutputStream(this);
+            BufferedOutputStream writer = new BufferedOutputStream(writer_tmp);
 
-        long offset = 0;
+            int offset = 0;
 
-        //Taille de la clef
-        writer.write(Tools.longToBytes(_key.length), offset, 8);
-        offset += 8;
-        //Clef
-        writer.write(Tools.stringToBytes(_key), offset, _key.length);
-        offset += _key.length;
-        //Size
-        writer.write(Tools.longToBytes(_size), offset, 8);
-        offset += 8;
-        //piecesize
-        writer.write(Tools.longToBytes(_piecesize), offset, 8);
-        offset += 8;
-        //Buffermap
-        long i;
-        for (i=0;i<this.nbPieces();i++) {
-            writer.write(Tools.longToBytes(-1), offset, 8);
-            offset += 8;
+            //Taille de la clef
+            writer.write(Tools.intToBytes(_key.length()), offset, 4);
+            offset += 4;
+            //Clef
+            writer.write(Tools.stringToBytes(_key), offset, _key.length());
+            offset += _key.length();
+            //Size
+            writer.write(Tools.intToBytes(_size), offset, 4);
+            offset += 4;
+            //piecesize
+            writer.write(Tools.intToBytes(_piecesize), offset, 4);
+            offset += 4;
+            //Buffermap
+            int i;
+            for (i=0;i<this.nbPieces();i++) {
+                writer.write(Tools.intToBytes(-1), offset, 4);
+                offset += 4;
+            }
+
+            writer.flush();
+            writer.close();
         }
-
-        writer.flush();
-        writer.close();
+        catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     /**
@@ -209,52 +221,57 @@ class FileShared extends File
      */
     private void readHeaderTmpFile()
     {
-        FileInputStream reader_tmp = new FileInputStream(this);
-        BufferedInputStream reader = new BufferedInputStream(reader_tmp);
+        try {
+            FileInputStream reader_tmp = new FileInputStream(this);
+            BufferedInputStream reader = new BufferedInputStream(reader_tmp);
 
-        byte[] tmp = new byte[8];
-        long key_size = 0;
-        long offset = 0;
+            byte[] tmp = new byte[4];
+            int key_size = 0;
+            int offset = 0;
 
-        //Taile de le clef
-        reader.read(tmp, offset, 8);
-        key_size = Tools.bytesToLong(tmp);
-        offset += 8;
-        //Clef
-        byte[] key = new byte[key_size];
-        reader.read(key, offset, key_size);
-        _key = Tools.bytesToString(key);
-        offset += key_size;
-        //Size
-        reader.read(tmp, offset, 8);
-        _size = Tools.bytesToLong(tmp);
-        offset += 8;
-        //piecesize
-        reader.read(tmp, offset, 8);
-        _piecesize = Tools.bytesToLong(tmp);
-        offset += 8;
-        //Buffermap
-        long buffer_size = this.nbPieces();
-        if ((buffer_size % 8) == 0) {
-            buffer_size = buffer_size / 8;
-        }
-        else {
-            buffer_size = buffer_size / 8 + 1;
-        }
-        _buffermap = Buffermap(buffer_size);
-        long i;
-        for (i=0;i<this.nbPieces();i++) {
-            reader.read(tmp, offset, 8);
-            if (Tools.bytesToLong(tmp) >= 0) {
-                _buffermap.setBit(i, 1);
+            //Taile de le clef
+            reader.read(tmp, offset, 4);
+            key_size = Tools.bytesToInt(tmp);
+            offset += 4;
+            //Clef
+            byte[] key = new byte[key_size];
+            reader.read(key, offset, key_size);
+            _key = Tools.bytesToString(key);
+            offset += key_size;
+            //Size
+            reader.read(tmp, offset, 4);
+            _size = Tools.bytesToInt(tmp);
+            offset += 4;
+            //piecesize
+            reader.read(tmp, offset, 4);
+            _piecesize = Tools.bytesToInt(tmp);
+            offset += 4;
+            //Buffermap
+            int buffer_size = this.nbPieces();
+            if ((buffer_size % 8) == 0) {
+                buffer_size = buffer_size / 8;
             }
             else {
-                _buffermap.setBit(i, 0);
+                buffer_size = buffer_size / 8 + 1;
             }
-            offset += 8;
+            _buffermap = new Buffermap(buffer_size);
+            int i;
+            for (i=0;i<this.nbPieces();i++) {
+                reader.read(tmp, offset, 4);
+                if (Tools.bytesToInt(tmp) >= 0) {
+                    _buffermap.setBit(i, true);
+                }
+                else {
+                    _buffermap.setBit(i, false);
+                }
+                offset += 4;
+            }
+            
+            reader.close();
         }
-        
-        reader.close();
+        catch(Exception e) {
+            e.printStackTrace();
+        }
     }
 
     /**
@@ -263,12 +280,12 @@ class FileShared extends File
      */
     private void readInfoCompleteFile()
     {
-        _size = this.length();
-        _piecesize = App.config.get("pieceSize");
+        _size = (int)this.length();
+        _piecesize = (Integer)App.config.get("pieceSize");
 
         /* ! BUFFERMAP INUTILE SI FICHIER COMPLET ! */
         /*
-        long buffersize = _size / _piecesize;
+        int buffersize = _size / _piecesize;
         if ((_size % _piecesize) > 0) buffersize++;
         if ((buffersize % 8) == 0) {
             buffersize = buffersize / 8;
@@ -288,30 +305,36 @@ class FileShared extends File
      */
     private String computeHash()
     {
-        FileInputStream reader_tmp = new FileInputStream(this);
-        BufferedInputStream reader = new BufferedInputStream(reader_tmp);
+        try {
+            FileInputStream reader_tmp = new FileInputStream(this);
+            BufferedInputStream reader = new BufferedInputStream(reader_tmp);
 
-        byte[] buffer = new byte[2048];
-        MessageDigest hash = MessageDigest.getInstance("MD5");
-        int count;
-        do {
-            count = reader.read(buffer);
-            if (count > 0) {
-                hash.update(buffer, 0, count);
+            byte[] buffer = new byte[2048];
+            MessageDigest hash = MessageDigest.getInstance("MD5");
+            int count;
+            do {
+                count = reader.read(buffer);
+                if (count > 0) {
+                    hash.update(buffer, 0, count);
+                }
+
             }
+            while (count != -1);
+            byte[] b = hash.digest();
 
+            reader.close();
+
+            String result = "";
+            for (int i=0;i<b.length;i++) {
+                result += Integer.toString((b[i] & 0xff) + 0x100, 16).substring(1);
+            }
+        
+            return result;
         }
-        while (count != -1);
-        byte[] b = hash.digest();
-
-        reader.close();
-
-        String result = "";
-        for (int i=0;i<b.length;i++) {
-            result += Integer.toString((b[i] & 0xff) + 0x100, 16).substring(1);
+        catch (Exception e) {
+            e.printStackTrace();
         }
-
-        return result;
+        return new String();
     }
 
     /**
@@ -319,20 +342,26 @@ class FileShared extends File
      * complet sur le disque
      * @param num : numéros de la piece
      */
-    private byte[] readPieceCompleteFile(long num)
+    private byte[] readPieceCompleteFile(int num)
     {
-        if (num < 0 || num >= this.nbPiece()) {
+        if (num < 0 || num >= this.nbPieces()) {
             throw new IllegalArgumentException();
         }
         
-        FileInputStream reader_tmp = new FileInputStream(this);
-        BufferedInputStream reader = new BufferedInputStream(reader_tmp);
+        try {
+            FileInputStream reader_tmp = new FileInputStream(this);
+            BufferedInputStream reader = new BufferedInputStream(reader_tmp);
 
-        byte[] piece = new byte[_piecesize];
-        reader.read(piece, _piecesize*num, _piecesize); 
-        reader.close();
-
-        return piece;
+            byte[] piece = new byte[_piecesize];
+            reader.read(piece, _piecesize*num, _piecesize); 
+            reader.close();
+        
+            return piece;
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+        }
+        return new byte[0];
     }
 
     /**
@@ -340,27 +369,33 @@ class FileShared extends File
      * temporaire sur le disque (la piece doit exister)
      * @param num : numéros de la piece
      */
-    private byte[] readPieceTmpFile(long num)
+    private byte[] readPieceTmpFile(int num)
     {
-        if (num < 0 || num >= this.nbPiece()) {
+        if (num < 0 || num >= this.nbPieces()) {
             throw new IllegalArgumentException();
         }
 
-        FileInputStream reader_tmp = new FileInputStream(this);
-        BufferedInputStream reader = new BufferedInputStream(reader_tmp);
+        try {
+            FileInputStream reader_tmp = new FileInputStream(this);
+            BufferedInputStream reader = new BufferedInputStream(reader_tmp);
 
-        byte[] tmp = new byte[8];
-        reader.read(tmp, 8 + _key.length + 8 + 8 + 8*num, 8);
-        long index_piece = Tools.bytesToLong(tmp);
-        if (index_piece < 0) {
-            throw new IllegalArgumentException();
+            byte[] tmp = new byte[4];
+            reader.read(tmp, 4 + _key.length() + 4 + 4 + 4*num, 4);
+            int index_piece = Tools.bytesToInt(tmp);
+            if (index_piece < 0) {
+                throw new IllegalArgumentException();
+            }
+
+            byte[] piece = new byte[_piecesize];
+            reader.read(piece, this.headerSize() + _piecesize*num, _piecesize); 
+            reader.close();
+
+            return piece;
         }
-
-        byte[] piece = new byte[_piecesize];
-        reader.read(piece, this.headerSize() + _piecesize*num, _piecesize); 
-        reader.close();
-
-        return piece;
+        catch (Exception e) {
+            e.printStackTrace();
+        }
+        return new byte[0];
     }
 
     /**
@@ -369,29 +404,34 @@ class FileShared extends File
      * @param piece : pièce à écrire
      * @param num : numéros de la pièce
      */
-    private void writePieceTmpFile(byte[] piece, long num)
+    private void writePieceTmpFile(byte[] piece, int num)
     {
-        if (num < 0 || num >= this.nbPiece()) {
+        if (num < 0 || num >= this.nbPieces()) {
             throw new IllegalArgumentException();
         }
         if (piece.length > _piecesize) {
             throw new IllegalArgumentException();
         }
-        
-        FileOutputStream writer_tmp = new FileOutputStream(this);
-        BufferedOutputStream writer = new BufferedOutputStream(writer_tmp);
+       
+        try {
+            FileOutputStream writer_tmp = new FileOutputStream(this);
+            BufferedOutputStream writer = new BufferedOutputStream(writer_tmp);
 
-        long index_piece = (this.length() - this.headerSize()) / _piecesize;
+            int index_piece = ((int)this.length() - this.headerSize()) / _piecesize;
 
-        if (piece.length < _piecesize) {
-            byte[] tmp = new byte[_piecesize];
-            piece = Array.copyOf(piece, _piecesize);
+            if (piece.length < _piecesize) {
+                byte[] tmp = new byte[_piecesize];
+                piece = Arrays.copyOf(piece, _piecesize);
+            }
+            writer.write(Tools.intToBytes(index_piece), 4 + _key.length() + 4 + 4 + 4*num, 4);
+            writer.write(piece, this.headerSize() + _piecesize*index_piece, _piecesize);
+            
+            writer.flush();
+            writer.close();
         }
-        writer.write(Tools.longToBytes(index_piece), 8 + _key.length + 8 + 8 + 8*num, 8);
-        writer.write(piece, this.headerSize() + _piecesize*index_piece, _piecesize);
-        
-        writer.flush();
-        writer.close();
+        catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 }
 

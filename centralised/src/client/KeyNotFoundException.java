@@ -1,7 +1,6 @@
 /**
  * @author csong
  */
-package client;
 
 import java.io.IOException;
 

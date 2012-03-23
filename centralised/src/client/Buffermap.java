@@ -80,11 +80,11 @@ class Buffermap
 
         if (val) {
             byte mask = 0x1;
-            _buffer[numByte] = (mask << numBit) | _buffer[numByte];
+            _buffer[numByte] |= (mask << numBit);
         }
         else {
             byte mask = 0x1;
-            _buffer[numByte] = (~(mask << numBit)) & _buffer[numByte];
+            _buffer[numByte] &= (~(mask << numBit));
         }
     }
 }

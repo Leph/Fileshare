@@ -80,8 +80,8 @@ public class Config
                     i++;
                 }
                 try {
-                    long valLong = Long.parseLong(right);
-                    set(left, valLong);
+                    int valInt = Integer.parseInt(right);
+                    set(left, valInt);
                 }
                 catch (Exception e) {
                     try {

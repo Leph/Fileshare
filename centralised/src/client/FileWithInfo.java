@@ -1,7 +1,6 @@
 /**
  * Cette classe contient les information necessaires d'un fichier
  */
-package client;
 
 import java.io.File;
 import java.net.URI;
