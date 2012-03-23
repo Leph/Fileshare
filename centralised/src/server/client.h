@@ -11,6 +11,8 @@
 #include <string.h>     /* for memset() */
 #include <unistd.h>     /* for close() */
 
+#include "file.h"
+
 #define NBR_FICHIERS_MAX 1000
 
 struct client
@@ -40,3 +42,5 @@ struct queue *queue_add_first(struct queue *, struct client *);
 struct queue *queue_remove_first(struct queue *);
 struct queue *queue_add_after(struct queue *,struct client *, struct client *);
 struct queue *queue_remove_after(struct queue *,struct client *);
+
+#endif

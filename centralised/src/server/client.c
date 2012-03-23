@@ -20,14 +20,14 @@ struct queue *init_queue_empty()
 
 void print_queue(struct queue *queue)
 {
-	struct client *current = queue->last;
-	printf("> ");
-	while(current!=NULL)
-	{
-		printf(/* infos */);
-		current=current->next;
-	}
-	printf("<\n");
+  struct client *current = queue->last;
+  printf("> ");
+  while(current!=NULL)
+    {
+      printf("/* infos */");
+      current=current->next;
+    }
+  printf("<\n");
 }
 
 
