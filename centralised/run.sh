@@ -1,4 +1,4 @@
 #! /bin/bash
 
-java -cp bin client/Main
+java -ea -cp bin App
 

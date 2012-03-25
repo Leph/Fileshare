@@ -3,8 +3,9 @@
  * Gère le fichier de configuration
  */
 
-import java.util.*;
 import java.io.*;
+import java.lang.*;
+import java.util.*;
 
 public class Config
 {
@@ -27,7 +28,12 @@ public class Config
      */
     public Object get(String param)
     {
-        return _config.get(param);
+        if (_config.get(param) == null) {
+            throw new IllegalArgumentException();
+        }
+        else {
+            return _config.get(param);
+        }
     }
 
     /**

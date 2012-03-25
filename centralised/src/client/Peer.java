@@ -7,7 +7,7 @@ class Peer
     /**
      * buffermap du fichier possédé par le pair
      */
-    public long buffermap;
+    public Buffermap buffermap;
 
     /**
      * Ip du pair
@@ -18,6 +18,5 @@ class Peer
      * Port d'écoute du pair
      */
     public int port;
-
 }
 

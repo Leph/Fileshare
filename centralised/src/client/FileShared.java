@@ -7,6 +7,7 @@ import java.io.*;
 import java.util.*;
 import java.lang.*;
 import java.security.*;
+import java.nio.channels.FileChannel;
 
 class FileShared extends File
 {
@@ -49,19 +50,21 @@ class FileShared extends File
     {
         super(
             name.endsWith((String)App.config.get("tmpExtension")) ? 
-            App.config.get("tmpDir") + File.pathSeparator + name : 
-            App.config.get("downloadDir") + File.pathSeparator + name
+            App.config.get("tmpDir") + File.separator + name : 
+            App.config.get("downloadDir") + File.separator + name
         );
+        
+        if (!this.exists() || !this.isFile()) {
+            throw new IllegalArgumentException();
+        }
 
         if (name.endsWith((String)App.config.get("tmpExtension"))) {
             _iscomplete = false;
+            this.readHeaderTmpFile();
         }
         else {
             _iscomplete = true;
-        }
-
-        if (!this.exists()) {
-            throw new IllegalArgumentException();
+            this.readInfoCompleteFile();
         }
     }
 
@@ -79,7 +82,7 @@ class FileShared extends File
     {
         super(
             App.config.get("tmpDir") + 
-            File.pathSeparator + 
+            File.separator + 
             name + 
             App.config.get("tmpExtension")
         );
@@ -103,6 +106,7 @@ class FileShared extends File
         }
         _buffermap = new Buffermap(buffersize);
 
+        this.initHeaderTmpFile();
     }
 
     /**
@@ -152,6 +156,52 @@ class FileShared extends File
     }
 
     /**
+     * Indique si le fichier possède la piece
+     * numeros num
+     */
+    public boolean hasPiece(int num)
+    {
+        if (num < 0 || num >= this.nbPieces()) {
+            throw new IllegalArgumentException();
+        }
+        if (_iscomplete) {
+            return true;
+        }
+        else {
+            return _buffermap.getBit(num);
+        }
+    }
+
+    /**
+     * Ecrit dans le fichier la pièce piece
+     * de numeros num
+     */
+    public void writePiece(byte[] piece, int num)
+    {
+        if (_iscomplete) {
+            throw new IllegalArgumentException();
+        }
+        else {
+            this.writePieceTmpFile(piece, num);
+            _buffermap.setBit(num, true);
+        }
+    }
+    
+    /**
+     * Lis et retourne  dans le fichier la pièce
+     * de numeros num
+     */
+    public byte[] readPiece(int num)
+    {
+        if (_iscomplete) {
+            return this.readPieceCompleteFile(num);
+        }
+        else {
+            return this.readPieceTmpFile(num);
+        }
+    }
+
+    /**
      * Structure du header des fichiers temporaires :
      * int   : taille de la clef en octets
      * string : key
@@ -174,7 +224,7 @@ class FileShared extends File
      */
     private int headerSize()
     {
-        return 4 + _key.length() + 4 + 4  + 4*this.nbPieces();
+        return 4 + _key.length() + 4 + 4 + 4*this.nbPieces();
     }
 
     /**
@@ -184,33 +234,34 @@ class FileShared extends File
     {
         try {
             FileOutputStream writer_tmp = new FileOutputStream(this);
-            BufferedOutputStream writer = new BufferedOutputStream(writer_tmp);
+            FileChannel writer = writer_tmp.getChannel();
 
             int offset = 0;
 
             //Taille de la clef
-            writer.write(Tools.intToBytes(_key.length()), offset, 4);
+            Tools.write(writer, offset, _key.length());
             offset += 4;
             //Clef
-            writer.write(Tools.stringToBytes(_key), offset, _key.length());
+            Tools.write(writer, offset, _key);
             offset += _key.length();
             //Size
-            writer.write(Tools.intToBytes(_size), offset, 4);
+            Tools.write(writer, offset, _size);
             offset += 4;
             //piecesize
-            writer.write(Tools.intToBytes(_piecesize), offset, 4);
+            Tools.write(writer, offset, _piecesize);
             offset += 4;
             //Buffermap
             int i;
             for (i=0;i<this.nbPieces();i++) {
-                writer.write(Tools.intToBytes(-1), offset, 4);
+                Tools.write(writer, offset, -1);
                 offset += 4;
             }
 
-            writer.flush();
-            writer.close();
+            writer.force(true);
+            writer_tmp.close();
         }
         catch (Exception e) {
+            System.out.println("Unable to create a new tmp file");
             e.printStackTrace();
         }
     }
@@ -223,28 +274,22 @@ class FileShared extends File
     {
         try {
             FileInputStream reader_tmp = new FileInputStream(this);
-            BufferedInputStream reader = new BufferedInputStream(reader_tmp);
+            FileChannel reader = reader_tmp.getChannel();
 
-            byte[] tmp = new byte[4];
             int key_size = 0;
             int offset = 0;
 
             //Taile de le clef
-            reader.read(tmp, offset, 4);
-            key_size = Tools.bytesToInt(tmp);
+            key_size = Tools.readInt(reader, offset);
             offset += 4;
             //Clef
-            byte[] key = new byte[key_size];
-            reader.read(key, offset, key_size);
-            _key = Tools.bytesToString(key);
+            _key = Tools.readString(reader, offset, key_size);
             offset += key_size;
             //Size
-            reader.read(tmp, offset, 4);
-            _size = Tools.bytesToInt(tmp);
+            _size = Tools.readInt(reader, offset);
             offset += 4;
             //piecesize
-            reader.read(tmp, offset, 4);
-            _piecesize = Tools.bytesToInt(tmp);
+            _piecesize = Tools.readInt(reader, offset);
             offset += 4;
             //Buffermap
             int buffer_size = this.nbPieces();
@@ -257,8 +302,8 @@ class FileShared extends File
             _buffermap = new Buffermap(buffer_size);
             int i;
             for (i=0;i<this.nbPieces();i++) {
-                reader.read(tmp, offset, 4);
-                if (Tools.bytesToInt(tmp) >= 0) {
+                int index = Tools.readInt(reader, offset);
+                if (index >= 0) {
                     _buffermap.setBit(i, true);
                 }
                 else {
@@ -267,9 +312,10 @@ class FileShared extends File
                 offset += 4;
             }
             
-            reader.close();
+            reader_tmp.close();
         }
         catch(Exception e) {
+            System.out.println("Unable to read tmp file header");
             e.printStackTrace();
         }
     }
@@ -282,20 +328,6 @@ class FileShared extends File
     {
         _size = (int)this.length();
         _piecesize = (Integer)App.config.get("pieceSize");
-
-        /* ! BUFFERMAP INUTILE SI FICHIER COMPLET ! */
-        /*
-        int buffersize = _size / _piecesize;
-        if ((_size % _piecesize) > 0) buffersize++;
-        if ((buffersize % 8) == 0) {
-            buffersize = buffersize / 8;
-        }
-        else {
-            buffersize = buffersize / 8 + 1;
-        }
-        _buffermap = new Buffermap(buffersize);
-        */
-
         _key = this.computeHash();
     }
 
@@ -332,6 +364,7 @@ class FileShared extends File
             return result;
         }
         catch (Exception e) {
+            System.out.println("Unable to compute key for complete file");
             e.printStackTrace();
         }
         return new String();
@@ -350,15 +383,20 @@ class FileShared extends File
         
         try {
             FileInputStream reader_tmp = new FileInputStream(this);
-            BufferedInputStream reader = new BufferedInputStream(reader_tmp);
+            FileChannel reader = reader_tmp.getChannel();
 
-            byte[] piece = new byte[_piecesize];
-            reader.read(piece, _piecesize*num, _piecesize); 
-            reader.close();
+            int size = _piecesize;
+            if (num == this.nbPieces()-1) {
+                size = _size - _piecesize*(this.nbPieces()-1);
+            }
+
+            byte[] piece = Tools.readBytes(reader, _piecesize*num, size);
+            reader_tmp.close();
         
             return piece;
         }
         catch (Exception e) {
+            System.out.println("Unable to read complete file piece");
             e.printStackTrace();
         }
         return new byte[0];
@@ -377,22 +415,25 @@ class FileShared extends File
 
         try {
             FileInputStream reader_tmp = new FileInputStream(this);
-            BufferedInputStream reader = new BufferedInputStream(reader_tmp);
+            FileChannel reader = reader_tmp.getChannel();
 
-            byte[] tmp = new byte[4];
-            reader.read(tmp, 4 + _key.length() + 4 + 4 + 4*num, 4);
-            int index_piece = Tools.bytesToInt(tmp);
+            int index_piece = Tools.readInt(reader, 4 + _key.length() + 4 + 4 + 4*num);
             if (index_piece < 0) {
                 throw new IllegalArgumentException();
             }
 
-            byte[] piece = new byte[_piecesize];
-            reader.read(piece, this.headerSize() + _piecesize*num, _piecesize); 
-            reader.close();
+            int size = _piecesize;
+            if (num == this.nbPieces()-1) {
+                size = _size - _piecesize*(this.nbPieces()-1);
+            }
+
+            byte[] piece = Tools.readBytes(reader, this.headerSize() + _piecesize*index_piece, size);
+            reader_tmp.close();
 
             return piece;
         }
         catch (Exception e) {
+            System.out.println("Unable to read tmp file piece");
             e.printStackTrace();
         }
         return new byte[0];
@@ -414,8 +455,8 @@ class FileShared extends File
         }
        
         try {
-            FileOutputStream writer_tmp = new FileOutputStream(this);
-            BufferedOutputStream writer = new BufferedOutputStream(writer_tmp);
+            RandomAccessFile writer_tmp = new RandomAccessFile(this, "rw");
+            FileChannel writer = writer_tmp.getChannel();
 
             int index_piece = ((int)this.length() - this.headerSize()) / _piecesize;
 
@@ -423,15 +464,57 @@ class FileShared extends File
                 byte[] tmp = new byte[_piecesize];
                 piece = Arrays.copyOf(piece, _piecesize);
             }
-            writer.write(Tools.intToBytes(index_piece), 4 + _key.length() + 4 + 4 + 4*num, 4);
-            writer.write(piece, this.headerSize() + _piecesize*index_piece, _piecesize);
+            Tools.write(writer, 4 + _key.length() + 4 + 4 + 4*num, index_piece);
+            Tools.write(writer, this.headerSize() + _piecesize*index_piece, piece);
             
-            writer.flush();
-            writer.close();
+            writer.force(true);
+            writer_tmp.close();
         }
         catch (Exception e) {
+            System.out.println("Unable to write tmp file piece");
             e.printStackTrace();
         }
+    }
+
+    /**
+     * Créer le fichier complet correspondant
+     * Copie et réassemble les données
+     * Supprime le fichier temporaire et renvoi le nouveau fichier
+     */
+    public FileShared tmpToComplete()
+    {
+        String name = this.getName();
+        name = name.substring(
+            0, 
+            name.length() - ((String)App.config.get("tmpExtension")).length()
+        );
+
+        File complete = new File(App.config.get("downloadDir") + File.separator + name);
+        if (complete.exists()) {
+            throw new IllegalArgumentException();
+        }
+
+        try {
+            FileOutputStream writer_tmp = new FileOutputStream(complete, true);
+            FileChannel writer = writer_tmp.getChannel();
+
+            int i;
+            for (i=0;i<this.nbPieces();i++) {
+                byte[] piece = this.readPieceTmpFile(i);
+                Tools.write(writer, 0, piece);
+            }
+
+            writer.force(true);
+            writer_tmp.close();
+        }
+        catch (Exception e) {
+            System.out.println("Unable to write complete file");
+            e.printStackTrace();
+        }
+
+        this.delete();
+
+        return new FileShared(name);
     }
 }
 

@@ -1,9 +1,22 @@
-#Fichier de configuration du client
+###
+### Fichier de configuration du client
+###
 
-pieceSize=1024
-fileDir=downloads/files/
-tmpDir=downloads/tmp/
+#Extension des fichiers temporaires
+tmpExtension = .tmp
 
-#port d'écoute
+#Répertoire contenant les fichiers temporaires
+tmpDir = tmp
+
+#Répertoire contetnant les fichiers complets
+downloadDir = downloads
+
+#Taille des pièces (ne pas modifier)
+pieceSize = 2048
+
+#Timeout en miliseconde des communication read sockets
+socketTimeout = 10000
+
+#Port d'écoute des autres pairs
 listenPort = 60000
 
