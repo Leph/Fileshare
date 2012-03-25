@@ -1,0 +1,90 @@
+\section{Tracker}
+Le tracker consiste à faire le lien entre les différents pairs, il récupère les informations de chaque client, les stocke et les redistribue au besoin. Le langage choisi pour implémenter cette application est le C. Le travail effectué sur le tracker s'articule en 3 parties:
+
+\begin{itemize}
+\item le serveur TCP
+\item la base de données
+\item le parseur de requêtes
+\item le traitement des requêtes
+\end{itemize}
+
+\subsection{La base de données}
+La base de données repose essentiellement sur une liste de structures "\texttt{struct mainTrackerElement}". Chaque \texttt{mainTrackerElement} de cette liste correspond à un fichier et est repéré par sa clé md5, car en effet, c'est le seul paramètre qui permet d'identifier un fichier de manière unique et qui permet ainsi le moins de redondance d'informations dans la base. Ci-dessous le code de cette structure:
+
+\begin{verbatim}
+struct mainTrackerElement{
+	struct link* peers;
+	char *keyP;
+	int size;
+	int pieceSize;
+	struct link* noms;
+};
+\end{verbatim}
+
+\begin{itemize}
+\item \texttt{struct link *peers} liste les différents pairs sous forme de chaîne de caractères du type [\$IP1:\$PORT1 ...].
+\item \texttt{char *keyP} est la clé md5 correspondant au fichier.
+\item \texttt{int size} est la t<F8><F9>aille du fichier en octets.
+\item \texttt{int pieceSize} est la taille des pièces en octets.
+\item \texttt{struct link *noms} liste les différents noms de ce fichier sous forme de chaîne de caractères.
+\end{itemize}
+
+\subsection{Le parseur de requêtes}
+Pour le parseur de requêtes le choix a été fait d'utiliser $lex/yacc$. L'utilisation d'une grammaire a été privilégié pour sa flexibilité - il est par exemple possible d'inverser les paramètres, ne pas se soucier des espaces etc. - et étant donné que le sujet de projet était sujet à des mises à jour, les modifications du code probables étaient ainsi rendues plus simples.\\
+L'une des difficultés était de faire accepter en entrée du parseur une chaîne de caractères de type \texttt{char*} car yacc n'est pas prévu pour de manière native. Il a donc fallu coder une fonction \texttt{readInput()} pour simuler la lecture dans un fichier, spécifier un lexeur (avec lex) pour analyser les mots de la requête et enfin une grammaire qui en parcourant l'arbre synthaxique, rempli une structure de données qui contiendra toutes les informations incluses dans chaque requête. Ci-dessous la structure en question:
+
+\begin{verbatim}
+struct commandLine
+{
+        enum type type;
+
+	$// announce:$
+        int port;
+        int filesNumber;
+        char* fileNames[MAX_FILES_NUMBER];
+        int lengths[MAX_FILES_NUMBER];
+        int pieceSize[MAX_FILES_NUMBER];
+        char *keys[MAX_FILES_NUMBER];
+
+	$// look:$
+        char *fileName;
+        int supTo;
+        int infTo;
+
+	$// getfile:$
+        char *getKey;
+
+	$// update:$
+        int seedKeysNumber;
+        int leechKeysNumber;
+        int isSeeder;
+        int isLeecher;
+        char* seedKeys[MAX_FILES_NUMBER];
+        char* leechKeys[MAX_FILES_NUMBER];
+};
+\end{verbatim}
+
+Chaque bloque correspondant à un type de requête ($ANNOUNCE, LOOK, GETFILE$ ou $UPDATE$).
+Cette structure est déclarée dans le programme en tant que variable globale afin d'être accessible par $yacc$. Elle fait partie des données sur lesquelles il faut mettre un mutex pour gérer les accès concurrents des différents clients.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
