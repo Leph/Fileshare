@@ -31,7 +31,7 @@ struct mainTrackerElement{
 
 \subsection{Le parseur de requêtes}
 Pour le parseur de requêtes le choix a été fait d'utiliser $lex/yacc$. L'utilisation d'une grammaire a été privilégié pour sa flexibilité - il est par exemple possible d'inverser les paramètres, ne pas se soucier des espaces etc. - et étant donné que le sujet de projet était sujet à des mises à jour, les modifications du code probables étaient ainsi rendues plus simples.\\
-L'une des difficultés était de faire accepter en entrée du parseur une chaîne de caractères de type \texttt{char*} car yacc n'est pas prévu pour de manière native. Il a donc fallu coder une fonction \texttt{readInput()} pour simuler la lecture dans un fichier, spécifier un lexeur (avec lex) pour analyser les mots de la requête et enfin une grammaire qui en parcourant l'arbre synthaxique, rempli une structure de données qui contiendra toutes les informations incluses dans chaque requête. Ci-dessous la structure en question:
+L'une des difficultés était de faire accepter en entrée du parseur une chaîne de caractères de type \texttt{char*} car yacc n'est pas prévu pour de manière native. Il a donc fallu coder une fonction \texttt{readInput()} pour simuler la lecture dans un fichier. Ensuite, il a falllu spécifier un lexeur (avec $lex$) pour analyser les mots de la requête et enfin une grammaire qui en parcourant l'arbre synthaxique, rempli une structure de données qui contiendra toutes les informations incluses dans chaque requête. Ci-dessous la structure en question:
 
 \begin{verbatim}
 struct commandLine
@@ -67,7 +67,25 @@ struct commandLine
 Chaque bloque correspondant à un type de requête ($ANNOUNCE, LOOK, GETFILE$ ou $UPDATE$).
 Cette structure est déclarée dans le programme en tant que variable globale afin d'être accessible par $yacc$. Elle fait partie des données sur lesquelles il faut mettre un mutex pour gérer les accès concurrents des différents clients.
 
+\subsection{Le serveur TCP}
+Cette partie repose simplement sur 3 fonctions:
 
+\begin{itemize}
+\item \texttt{cree_socket_stream()} consiste à initialiser la connexion en créant la socket ($socket()$) et la liant à un point de communication ($bind()$) défini par l'adresse locale et le port d'écoute.
+\item \texttt{serveur_tcp()} écoute sur la port prévu ($listen()$) \texttt{socket_contact} et créé un thread ($pthread_create()$) par connexion entrante.
+\item \texttt{traite_connexion()} est la fonction de thread: elle prend en paramètre le descripteur de socket retourné par ($accept()$). Cette fonction reçoit une requête grâce à $recv()$ puis lance le parseur par \texttt{yyparse()}. A ce moment là, elle lance la fonction \texttt{cloneCommandLine()} qui clone la structure contenant les données de la requête afin de libérer cette ressource partagée et lance la fonction de traitement appropriée en fonction du type de la requête.
+\end{itemize}
+
+Les fonctions de traitement sont au nombre de 4 et chacune correspond à un type de requête:
+
+\begin{itemize}
+\item \texttt{announce_tracker()}
+\item \texttt{look_tracker()}
+\item \texttt{getFile_tracket()}
+\item \texttt{update_tracker()}
+\end{itemize}
+
+Chacune de ces fonctions effectue le traitement associé au type de la requête (mises à jour, recherche, modifications etc.).
 
 
 
