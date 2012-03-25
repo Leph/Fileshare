@@ -12,7 +12,7 @@ Le tracker consiste à faire le lien entre les différents pairs, il récupère 
 La base de données repose essentiellement sur une liste de structures "\texttt{struct mainTrackerElement}". Chaque \texttt{mainTrackerElement} de cette liste correspond à un fichier et est repéré par sa clé md5, car en effet, c'est le seul paramètre qui permet d'identifier un fichier de manière unique et qui permet ainsi le moins de redondance d'informations dans la base. Ci-dessous le code de cette structure:
 
 \begin{verbatim}
-struct mainTrackerElement{
+struct mainTrackerElement {
         struct link* peers;
         char *keyP;
         int size;
@@ -34,11 +34,10 @@ Pour le parseur de requêtes le choix a été fait d'utiliser lex/yacc. L'utilis
 L'une des difficultés était de faire accepter en entrée du parseur une chaîne de caractères de type \texttt{char*} car yacc n'est pas prévu pour de manière native. Il a donc fallu coder une fonction \texttt{readInput()} pour simuler la lecture dans un fichier. Ensuite, il a falllu spécifier un lexeur (avec $lex$) pour analyser les mots de la requête et enfin une grammaire qui en parcourant l'arbre synthaxique, rempli une structure de données qui contiendra toutes les informations incluses dans chaque requête. Ci-dessous la structure en question:
 
 \begin{verbatim}
-struct commandLine
-{
+struct commandLine {
         enum type type;
 
-        $// announce:$
+        // announce:
         int port;
         int filesNumber;
         char* fileNames[MAX_FILES_NUMBER];
@@ -46,15 +45,15 @@ struct commandLine
         int pieceSize[MAX_FILES_NUMBER];
         char *keys[MAX_FILES_NUMBER];
 
-        $// look:$
+        // look:
         char *fileName;
         int supTo;
         int infTo;
 
-        $// getfile:$
+        // getfile:
         char *getKey;
 
-        $// update:$
+        // update:
         int seedKeysNumber;
         int leechKeysNumber;
         int isSeeder;
@@ -72,7 +71,7 @@ Cette partie repose simplement sur 3 fonctions:
 
 \begin{itemize}
 \item \texttt{cree\_socket\_stream()} consiste à initialiser la connexion en créant la socket ($socket()$) et la liant à un point de communication ($bind()$) défini par l'adresse locale et le port d'écoute.
-\item \texttt{serveur\_tcp()} écoute sur la port prévu ($listen()$) \texttt{socket\_contact} et créé un thread ($pthread_create()$) par connexion entrante.
+\item \texttt{serveur\_tcp()} écoute sur la port prévu ($listen()$) \texttt{socket\_contact} et créé un thread ($pthread\_create()$) par connexion entrante.
 \item \texttt{traite\_connexion()} est la fonction de thread: elle prend en paramètre le descripteur de socket retourné par ($accept()$). Cette fonction reçoit une requête grâce à $recv()$ puis lance le parseur par \texttt{yyparse()}. A ce moment là, elle lance la fonction \texttt{cloneCommandLine()} qui clone la structure contenant les données de la requête afin de libérer cette ressource partagée et lance la fonction de traitement appropriée en fonction du type de la requête.
 \end{itemize}
 
