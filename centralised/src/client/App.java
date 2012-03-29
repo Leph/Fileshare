@@ -29,6 +29,15 @@ class App
         testFileManager();
         testBuffermap();
         testFileShared();
+
+        try {
+            ClientSocket s = new ClientSocket("127.0.0.1", 6000);
+            s.announce();
+            s.look("pied.jpeg");
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     /**
