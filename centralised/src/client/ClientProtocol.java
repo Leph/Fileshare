@@ -1,18 +1,27 @@
 /**
  * Représente une connexion en mode client
- * client -- requète --> serveur
+ * client -- requète -- serveur
  */
 
 import java.io.*;
 import java.net.*;
+import java.util.*;
+import java.lang.*;
+import java.util.regex.Pattern;
+import java.util.regex.Matcher;
 
-class ClientSocket extends Socket
+class ClientProtocol extends Socket
 {
+    /**
+     * Announce protocol
+     */
+    static Pattern _announce = Pattern.compile("ok");
+
     /**
      * Initialise la connexion avec
      * IP, port
      */
-    public ClientSocket(String ip, int port) throws UnknownHostException, IOException
+    public ClientProtocol(String ip, int port) throws UnknownHostException, IOException
     {
         super(ip, port);
 
@@ -59,6 +68,40 @@ class ClientSocket extends Socket
 
         this.writeBytes(query.getBytes());
 
+        int size = 1024;
+        byte[] buffer = new byte[size];
+        int offset = 0;
+
+        while (true) {
+            int read = reader.read(buffer, offset, size-offset);
+            offset += read;
+            Matcher matcher = _announce.matcher(new String(buffer, 0, offset));
+            System.out.println("read: "+read);
+            System.out.println("offset: "+offset);
+            System.out.println("size: "+size);
+            System.out.println(new String(buffer, 0, offset));
+            if (matcher.lookingAt()) {
+                System.out.println("COOL");
+                return;
+            }
+            try {
+                int last = matcher.end();
+                System.out.println("last: "+last);
+                if (last != offset) {
+                    throw new IOException("Protocol error");
+                }
+            }
+            catch (IllegalStateException e) {
+                e.printStackTrace();
+                throw new IOException("Protocol error");
+            }
+            if (read == size-offset) {
+                size *= 2;
+                buffer = Arrays.copyOf(buffer, size);
+            }
+        }
+
+        /*
         int data1 = reader.read();
         if ((byte)data1 != (byte)'o') {
             throw new IOException("Protocol error");
@@ -67,6 +110,7 @@ class ClientSocket extends Socket
         if ((byte)data2 != (byte)'k') {
             throw new IOException("Protocol error");
         }
+        */
     }
 
     /**

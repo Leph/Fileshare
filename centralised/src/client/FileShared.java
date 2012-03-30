@@ -55,6 +55,7 @@ class FileShared extends File
         );
         
         if (!this.exists() || !this.isFile()) {
+            System.out.println("Invalid file : " + name);
             throw new IllegalArgumentException();
         }
 

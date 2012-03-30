@@ -31,7 +31,7 @@ class App
         testFileShared();
 
         try {
-            ClientSocket s = new ClientSocket("127.0.0.1", 6000);
+            ClientProtocol s = new ClientProtocol("127.0.0.1", 6000);
             s.announce();
             s.look("pied.jpeg");
         }
