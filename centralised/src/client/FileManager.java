@@ -37,6 +37,11 @@ class FileManager
     private void scanCompleteDir()
     {
         File dir = new File((String)App.config.get("downloadDir"));
+        if (!dir.exists() || !dir.isDirectory()) {
+            System.out.println("Unable to read directory : " + 
+                (String)App.config.get("downloadDir"));
+            throw new IllegalArgumentException();
+        }
         File[] scan = dir.listFiles();
 
         for (int i=0;i<scan.length;i++) {
@@ -51,6 +56,11 @@ class FileManager
     private void scanTmpDir()
     {
         File dir = new File((String)App.config.get("tmpDir"));
+        if (!dir.exists() || !dir.isDirectory()) {
+            System.out.println("Unable to read directory : " + 
+                (String)App.config.get("tmpDir"));
+            throw new IllegalArgumentException();
+        }
         File[] scan = dir.listFiles();
 
         for (int i=0;i<scan.length;i++) {
