@@ -16,6 +16,11 @@ class ClientProtocol extends Socket
      * Announce protocol
      */
     static Pattern _announce = Pattern.compile("ok");
+    
+    /**
+     * Look protocol
+     */
+    static Pattern _look = Pattern.compile("list \\[([^\\s]+) (\\d+) (\\d+) (\\w+)\\]");
 
     /**
      * Initialise la connexion avec
@@ -62,55 +67,28 @@ class ClientProtocol extends Socket
             }
         }
         query += "]";
-
-        InputStream reader_tmp = this.getInputStream();
-        BufferedInputStream reader = new BufferedInputStream(reader_tmp);
-
+        
         this.writeBytes(query.getBytes());
 
+        /**/
+        InputStream reader_tmp = this.getInputStream();
+        BufferedInputStream reader = new BufferedInputStream(reader_tmp);
         int size = 1024;
         byte[] buffer = new byte[size];
         int offset = 0;
-
         while (true) {
             int read = reader.read(buffer, offset, size-offset);
             offset += read;
-            Matcher matcher = _announce.matcher(new String(buffer, 0, offset));
-            System.out.println("read: "+read);
-            System.out.println("offset: "+offset);
-            System.out.println("size: "+size);
-            System.out.println(new String(buffer, 0, offset));
+            Matcher matcher = _announce.matcher(new String(buffer, 0, offset)); 
             if (matcher.lookingAt()) {
-                System.out.println("COOL");
                 return;
-            }
-            try {
-                int last = matcher.end();
-                System.out.println("last: "+last);
-                if (last != offset) {
-                    throw new IOException("Protocol error");
-                }
-            }
-            catch (IllegalStateException e) {
-                e.printStackTrace();
-                throw new IOException("Protocol error");
             }
             if (read == size-offset) {
                 size *= 2;
                 buffer = Arrays.copyOf(buffer, size);
             }
         }
-
-        /*
-        int data1 = reader.read();
-        if ((byte)data1 != (byte)'o') {
-            throw new IOException("Protocol error");
-        }
-        int data2 = reader.read();
-        if ((byte)data2 != (byte)'k') {
-            throw new IOException("Protocol error");
-        }
-        */
+        /**/
     }
 
     /**
@@ -125,6 +103,19 @@ class ClientProtocol extends Socket
         query += "]";
 
         this.writeBytes(query.getBytes());
+        
+        /**/
+        InputStream reader_tmp = this.getInputStream();
+        BufferedInputStream reader = new BufferedInputStream(reader_tmp);
+
+        String[] groups = new String[0];
+        int offset = readBytesToPattern(reader, 0, _look, groups);
+        System.out.println(offset);
+        System.out.println(groups.length);
+        for (int i=0;i<groups.length;i++) {
+            System.out.println(groups[i]);
+        }
+        /**/
     }
 
     /**
@@ -136,6 +127,35 @@ class ClientProtocol extends Socket
         BufferedOutputStream writer = new BufferedOutputStream(writer_tmp);
         writer.write(buffer, 0, buffer.length);
         writer.flush();
+    }
+
+    /**
+     * Lis la socket selon le pattern spécifié
+     */
+    private int readBytesToPattern(BufferedInputStream reader, int offset, Pattern pattern, String[] groups) throws IOException
+    {
+        int size = 1024;
+        byte[] buffer = new byte[size];
+        int len = 0;
+        while (true) {
+            int read = reader.read(buffer, offset, size-offset);
+            len += read;
+            offset += read;
+            Matcher matcher = pattern.matcher(new String(buffer, 0, len)); 
+            if (matcher.lookingAt()) {
+                int count = matcher.groupCount();
+                groups = new String[count];
+                for (int i=0;i<count;i++) {
+                    groups[i] = matcher.group(i+1);
+                }
+                System.out.println(groups.length);
+                return matcher.end();
+            }
+            if (read == size-offset) {
+                size *= 2;
+                buffer = Arrays.copyOf(buffer, size);
+            }
+        }
     }
 }
 
