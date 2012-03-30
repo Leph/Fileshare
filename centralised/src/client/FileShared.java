@@ -408,7 +408,7 @@ class FileShared extends File
      * temporaire sur le disque (la piece doit exister)
      * @param num : numéros de la piece
      */
-    private byte[] readPieceTmpFile(int num)
+    synchronized private byte[] readPieceTmpFile(int num)
     {
         if (num < 0 || num >= this.nbPieces()) {
             throw new IllegalArgumentException();
@@ -446,7 +446,7 @@ class FileShared extends File
      * @param piece : pièce à écrire
      * @param num : numéros de la pièce
      */
-    private void writePieceTmpFile(byte[] piece, int num)
+    synchronized private void writePieceTmpFile(byte[] piece, int num)
     {
         if (num < 0 || num >= this.nbPieces()) {
             throw new IllegalArgumentException();
@@ -482,7 +482,7 @@ class FileShared extends File
      * Copie et réassemble les données
      * Supprime le fichier temporaire et renvoi le nouveau fichier
      */
-    public FileShared tmpToComplete()
+    synchronized public FileShared tmpToComplete()
     {
         String name = this.getName();
         name = name.substring(
