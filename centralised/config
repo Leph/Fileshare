@@ -20,3 +20,5 @@ socketTimeout = 10000
 #Port d'écoute des autres pairs
 listenPort = 60000
 
+#Time slice en second pour faire un automatique mis a jours
+timeslice = 10

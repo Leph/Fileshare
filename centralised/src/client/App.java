@@ -4,6 +4,8 @@
  */
 
 import java.io.*;
+import java.lang.Runnable;
+import java.lang.Thread;
 
 class App
 {
@@ -24,16 +26,31 @@ class App
     {
         App.config.load("config");
         App.files.init();
+	
 
         testConfig();
         testFileManager();
         testBuffermap();
         testFileShared();
 
-        try {
+	try {
+		Thread autoRefresher = new Thread(new Runnable(){
+			@Override
+			public void run(){
+				while (true){
+					try{
+						wait(((Integer)(App.config.get("timeslice"))).intValue()*1000);
+						// ->"have $key $BufferMap" au pairs connectes
+					}catch (Exception ex){
+						ex.printStackTrace();
+					}
+				}
+			}
+		});
             ClientProtocol s = new ClientProtocol("127.0.0.1", 6000);
             s.announce();
             s.look("pied.jpeg");
+	    autoRefresher.start();
         }
         catch (Exception e) {
             e.printStackTrace();
@@ -167,7 +184,7 @@ class App
         assert piece9[0] == 3;
         assert piece9[9] == 9;
 
-        f3.delete();
+	f3.delete();
     }
 
 }
