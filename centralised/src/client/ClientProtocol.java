@@ -16,6 +16,13 @@ class ClientProtocol extends Socket
      * Announce protocol
      */
     static Pattern _announce = Pattern.compile("ok");
+    
+    /**
+     * Look protocol
+     */
+    static Pattern _look_begin = Pattern.compile("list \\[");
+    static Pattern _look_repeat = Pattern.compile("([^\\s]+) (\\d+) (\\d+) (\\w+)[ ]?");
+    static Pattern _look_end = Pattern.compile("\\]");
 
     /**
      * Initialise la connexion avec
@@ -62,55 +69,28 @@ class ClientProtocol extends Socket
             }
         }
         query += "]";
-
-        InputStream reader_tmp = this.getInputStream();
-        BufferedInputStream reader = new BufferedInputStream(reader_tmp);
-
+        
         this.writeBytes(query.getBytes());
 
+        /**/
+        InputStream reader_tmp = this.getInputStream();
+        BufferedInputStream reader = new BufferedInputStream(reader_tmp);
         int size = 1024;
         byte[] buffer = new byte[size];
         int offset = 0;
-
         while (true) {
             int read = reader.read(buffer, offset, size-offset);
             offset += read;
-            Matcher matcher = _announce.matcher(new String(buffer, 0, offset));
-            System.out.println("read: "+read);
-            System.out.println("offset: "+offset);
-            System.out.println("size: "+size);
-            System.out.println(new String(buffer, 0, offset));
+            Matcher matcher = _announce.matcher(new String(buffer, 0, offset)); 
             if (matcher.lookingAt()) {
-                System.out.println("COOL");
                 return;
-            }
-            try {
-                int last = matcher.end();
-                System.out.println("last: "+last);
-                if (last != offset) {
-                    throw new IOException("Protocol error");
-                }
-            }
-            catch (IllegalStateException e) {
-                e.printStackTrace();
-                throw new IOException("Protocol error");
             }
             if (read == size-offset) {
                 size *= 2;
                 buffer = Arrays.copyOf(buffer, size);
             }
         }
-
-        /*
-        int data1 = reader.read();
-        if ((byte)data1 != (byte)'o') {
-            throw new IOException("Protocol error");
-        }
-        int data2 = reader.read();
-        if ((byte)data2 != (byte)'k') {
-            throw new IOException("Protocol error");
-        }
-        */
+        /**/
     }
 
     /**
@@ -125,6 +105,34 @@ class ClientProtocol extends Socket
         query += "]";
 
         this.writeBytes(query.getBytes());
+        
+        InputStream reader_tmp = this.getInputStream();
+        BufferedInputStream reader = new BufferedInputStream(reader_tmp);
+        reader.mark(512);
+
+        ArrayList<String> groups = new ArrayList<String>();
+        int offset = 0;
+    
+        offset += readBytesToPattern(reader, offset, _look_begin, null, groups);
+        System.out.println(offset);
+        System.out.println(groups.size());
+        for (int i=0;i<groups.size();i++) {
+            System.out.println(groups.get(i));
+        }
+
+        int tmp = 0;
+        do {
+            System.out.println(">"+offset);
+            tmp = readBytesToPattern(reader, offset, _look_repeat, _look_end, groups);
+            if (tmp != -1) {
+                offset += tmp;
+            }
+            System.out.println(offset);
+            System.out.println(groups.size());
+            for (int i=0;i<groups.size();i++) {
+                System.out.println(groups.get(i));
+            }
+        } while (tmp != -1);
     }
 
     /**
@@ -137,5 +145,69 @@ class ClientProtocol extends Socket
         writer.write(buffer, 0, buffer.length);
         writer.flush();
     }
+
+    /**
+     * Lis la socket selon le pattern spécifié
+     */
+    private int readBytesToPattern(BufferedInputStream reader, int offset, Pattern pattern, Pattern reject, ArrayList<String> groups) throws IOException
+    {
+        reader.reset();
+        reader.skip(offset);
+        int size = 1024;
+        byte[] buffer = new byte[size];
+        int len = 0;
+        while (true) {
+            int read = reader.read(buffer, offset, size-offset);
+            len += read;
+            offset += read;
+            System.out.println(">>>>" + new String(buffer, 0, len));
+            if (reject != null) {
+                Matcher matcher = reject.matcher(new String(buffer, 0, len));
+                if (matcher.lookingAt()) {
+                    return -1;
+                }
+            }
+            Matcher matcher = pattern.matcher(new String(buffer, 0, len));
+            if (matcher.lookingAt()) {
+                int count = matcher.groupCount();
+                for (int i=0;i<count;i++) {
+                    groups.add(matcher.group(i+1));
+                }
+                return matcher.end();
+            }
+            if (read == size-offset) {
+                size *= 2;
+                buffer = Arrays.copyOf(buffer, size);
+            }
+        }
+    }
+
+    /**
+     *
+     */
+    /*
+    private int readBytesToPatternIterate(BufferedInputStream reader, int offset, Pattern pattern, Pattern reject, ArrayList groups) throws IOException
+    {
+        if (reject != null) {
+            throw new IllegalArgumentException();
+        }
+        Object[] result = new Object[2];
+        result[0] = (Object)(new String[0]);
+        result[1] = (Object)offset;
+        while (true) {
+            Object[] r = readBytesToPattern(reader, (Integer)result[1], pattern, reject);
+            if (r == null) {
+                break;
+            }
+            String[] tmp = new String[((String[])result[0]).length + ((String[])r[0]).length];
+            System.arraycopy((String[])result[0], 0, tmp, 0, ((String[])result[0]).length);
+            System.arraycopy((String[])r[0], 0, tmp, ((String[])result[0]).length, ((String[])r[0]).length);
+            result[0] = (Object)tmp;
+            result[1] = (Object)((Integer)result[1] + (Integer)r[1]);
+        }
+        
+        return result;
+    }
+    */
 }
 

@@ -15,7 +15,7 @@ downloadDir = downloads
 pieceSize = 2048
 
 #Timeout en miliseconde des communication read sockets
-socketTimeout = 10000
+socketTimeout = 60000
 
 #Port d'écoute des autres pairs
 listenPort = 60000

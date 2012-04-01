@@ -49,6 +49,7 @@ class App
 		});
             ClientProtocol s = new ClientProtocol("127.0.0.1", 6000);
             s.announce();
+            Thread.sleep(4000);
             s.look("pied.jpeg");
 	    autoRefresher.start();
         }
