@@ -20,7 +20,9 @@ class ClientProtocol extends Socket
     /**
      * Look protocol
      */
-    static Pattern _look = Pattern.compile("list \\[([^\\s]+) (\\d+) (\\d+) (\\w+)\\]");
+    static Pattern _look_begin = Pattern.compile("list \\[");
+    static Pattern _look_repeat = Pattern.compile("([^\\s]+) (\\d+) (\\d+) (\\w+)[ ]?");
+    static Pattern _look_end = Pattern.compile("\\]");
 
     /**
      * Initialise la connexion avec
@@ -104,18 +106,33 @@ class ClientProtocol extends Socket
 
         this.writeBytes(query.getBytes());
         
-        /**/
         InputStream reader_tmp = this.getInputStream();
         BufferedInputStream reader = new BufferedInputStream(reader_tmp);
+        reader.mark(512);
 
-        String[] groups = new String[0];
-        int offset = readBytesToPattern(reader, 0, _look, groups);
+        ArrayList<String> groups = new ArrayList<String>();
+        int offset = 0;
+    
+        offset += readBytesToPattern(reader, offset, _look_begin, null, groups);
         System.out.println(offset);
-        System.out.println(groups.length);
-        for (int i=0;i<groups.length;i++) {
-            System.out.println(groups[i]);
+        System.out.println(groups.size());
+        for (int i=0;i<groups.size();i++) {
+            System.out.println(groups.get(i));
         }
-        /**/
+
+        int tmp = 0;
+        do {
+            System.out.println(">"+offset);
+            tmp = readBytesToPattern(reader, offset, _look_repeat, _look_end, groups);
+            if (tmp != -1) {
+                offset += tmp;
+            }
+            System.out.println(offset);
+            System.out.println(groups.size());
+            for (int i=0;i<groups.size();i++) {
+                System.out.println(groups.get(i));
+            }
+        } while (tmp != -1);
     }
 
     /**
@@ -132,8 +149,10 @@ class ClientProtocol extends Socket
     /**
      * Lis la socket selon le pattern spécifié
      */
-    private int readBytesToPattern(BufferedInputStream reader, int offset, Pattern pattern, String[] groups) throws IOException
+    private int readBytesToPattern(BufferedInputStream reader, int offset, Pattern pattern, Pattern reject, ArrayList<String> groups) throws IOException
     {
+        reader.reset();
+        reader.skip(offset);
         int size = 1024;
         byte[] buffer = new byte[size];
         int len = 0;
@@ -141,14 +160,19 @@ class ClientProtocol extends Socket
             int read = reader.read(buffer, offset, size-offset);
             len += read;
             offset += read;
-            Matcher matcher = pattern.matcher(new String(buffer, 0, len)); 
+            System.out.println(">>>>" + new String(buffer, 0, len));
+            if (reject != null) {
+                Matcher matcher = reject.matcher(new String(buffer, 0, len));
+                if (matcher.lookingAt()) {
+                    return -1;
+                }
+            }
+            Matcher matcher = pattern.matcher(new String(buffer, 0, len));
             if (matcher.lookingAt()) {
                 int count = matcher.groupCount();
-                groups = new String[count];
                 for (int i=0;i<count;i++) {
-                    groups[i] = matcher.group(i+1);
+                    groups.add(matcher.group(i+1));
                 }
-                System.out.println(groups.length);
                 return matcher.end();
             }
             if (read == size-offset) {
@@ -157,5 +181,33 @@ class ClientProtocol extends Socket
             }
         }
     }
+
+    /**
+     *
+     */
+    /*
+    private int readBytesToPatternIterate(BufferedInputStream reader, int offset, Pattern pattern, Pattern reject, ArrayList groups) throws IOException
+    {
+        if (reject != null) {
+            throw new IllegalArgumentException();
+        }
+        Object[] result = new Object[2];
+        result[0] = (Object)(new String[0]);
+        result[1] = (Object)offset;
+        while (true) {
+            Object[] r = readBytesToPattern(reader, (Integer)result[1], pattern, reject);
+            if (r == null) {
+                break;
+            }
+            String[] tmp = new String[((String[])result[0]).length + ((String[])r[0]).length];
+            System.arraycopy((String[])result[0], 0, tmp, 0, ((String[])result[0]).length);
+            System.arraycopy((String[])r[0], 0, tmp, ((String[])result[0]).length, ((String[])r[0]).length);
+            result[0] = (Object)tmp;
+            result[1] = (Object)((Integer)result[1] + (Integer)r[1]);
+        }
+        
+        return result;
+    }
+    */
 }
 
