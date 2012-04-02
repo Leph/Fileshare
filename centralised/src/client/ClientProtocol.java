@@ -7,6 +7,7 @@ import java.io.*;
 import java.net.*;
 import java.util.*;
 import java.lang.*;
+import java.io.IOException;
 import java.util.regex.Pattern;
 import java.util.regex.Matcher;
 
@@ -107,32 +108,26 @@ class ClientProtocol extends Socket
         this.writeBytes(query.getBytes());
         
         InputStream reader_tmp = this.getInputStream();
-        BufferedInputStream reader = new BufferedInputStream(reader_tmp);
-        reader.mark(512);
+        RandomInputStream reader = new RandomInputStream(reader_tmp);
 
         ArrayList<String> groups = new ArrayList<String>();
-        int offset = 0;
     
+        int offset = 0;
         offset += readBytesToPattern(reader, offset, _look_begin, null, groups);
+
+        int tmp = 0;
+        do {
+            tmp = readBytesToPattern(reader, offset, _look_repeat, _look_end, groups);
+            if (tmp != -1) {
+                offset += tmp;
+            }
+        } while (tmp != -1);
+            
         System.out.println(offset);
         System.out.println(groups.size());
         for (int i=0;i<groups.size();i++) {
             System.out.println(groups.get(i));
         }
-
-        int tmp = 0;
-        do {
-            System.out.println(">"+offset);
-            tmp = readBytesToPattern(reader, offset, _look_repeat, _look_end, groups);
-            if (tmp != -1) {
-                offset += tmp;
-            }
-            System.out.println(offset);
-            System.out.println(groups.size());
-            for (int i=0;i<groups.size();i++) {
-                System.out.println(groups.get(i));
-            }
-        } while (tmp != -1);
     }
 
     /**
@@ -147,67 +142,41 @@ class ClientProtocol extends Socket
     }
 
     /**
-     * Lis la socket selon le pattern spécifié
+     * Lis la socket selon le pattern spécifié et enregistre les groups trouvés
+     * @param reader : le RandomInputStream représentant le flux d'entré
+     * @param offset : l'offset de lecture dans le flux d'entré
+     * @param pattern : le pattern à matcher
+     * @param reject : le pattern d'arrêt de lecture optionnel (peut être null)
+     * @param groups : les groups trouvé sont ajouté dans l'ArrayList
+     * Retourne l'offset du dernier caractère lus si le pattern est matcher
+     * Retourne -1 si le pattern de rejet est matcher
+     * Si le pattern n'est pas reconnu, lecture jusqu'à ce que la socket timeout (exception)
      */
-    private int readBytesToPattern(BufferedInputStream reader, int offset, Pattern pattern, Pattern reject, ArrayList<String> groups) throws IOException
+    private int readBytesToPattern(RandomInputStream reader, int offset, Pattern pattern, Pattern reject, ArrayList<String> groups) throws IOException
     {
-        reader.reset();
-        reader.skip(offset);
-        int size = 1024;
-        byte[] buffer = new byte[size];
-        int len = 0;
-        while (true) {
-            int read = reader.read(buffer, offset, size-offset);
-            len += read;
-            offset += read;
-            System.out.println(">>>>" + new String(buffer, 0, len));
-            if (reject != null) {
-                Matcher matcher = reject.matcher(new String(buffer, 0, len));
+        do {
+            byte[] data = reader.read(offset);
+            if (data.length > 0) {
+                String str = new String(data);
+                if (reject != null) {
+                    Matcher matcher = reject.matcher(str);
+                    if (matcher.lookingAt()) {
+                        return -1;
+                    }
+                }
+                Matcher matcher = pattern.matcher(str);
                 if (matcher.lookingAt()) {
-                    return -1;
+                    int count = matcher.groupCount();
+                    for (int i=0;i<count;i++) {
+                        groups.add(matcher.group(i+1));
+                    }
+                    return matcher.end();
                 }
             }
-            Matcher matcher = pattern.matcher(new String(buffer, 0, len));
-            if (matcher.lookingAt()) {
-                int count = matcher.groupCount();
-                for (int i=0;i<count;i++) {
-                    groups.add(matcher.group(i+1));
-                }
-                return matcher.end();
+            if (reader.getData()) {
+                throw new IOException("Connection closed");
             }
-            if (read == size-offset) {
-                size *= 2;
-                buffer = Arrays.copyOf(buffer, size);
-            }
-        }
+        } while (true);
     }
-
-    /**
-     *
-     */
-    /*
-    private int readBytesToPatternIterate(BufferedInputStream reader, int offset, Pattern pattern, Pattern reject, ArrayList groups) throws IOException
-    {
-        if (reject != null) {
-            throw new IllegalArgumentException();
-        }
-        Object[] result = new Object[2];
-        result[0] = (Object)(new String[0]);
-        result[1] = (Object)offset;
-        while (true) {
-            Object[] r = readBytesToPattern(reader, (Integer)result[1], pattern, reject);
-            if (r == null) {
-                break;
-            }
-            String[] tmp = new String[((String[])result[0]).length + ((String[])r[0]).length];
-            System.arraycopy((String[])result[0], 0, tmp, 0, ((String[])result[0]).length);
-            System.arraycopy((String[])r[0], 0, tmp, ((String[])result[0]).length, ((String[])r[0]).length);
-            result[0] = (Object)tmp;
-            result[1] = (Object)((Integer)result[1] + (Integer)r[1]);
-        }
-        
-        return result;
-    }
-    */
 }
 
