@@ -16,14 +16,26 @@ class ClientProtocol extends Socket
     /**
      * Announce protocol
      */
-    static Pattern _announce = Pattern.compile("ok");
+    static final private Pattern _announce = Pattern.compile("ok");
     
     /**
      * Look protocol
      */
-    static Pattern _look_begin = Pattern.compile("list \\[");
-    static Pattern _look_repeat = Pattern.compile("([^\\s]+) (\\d+) (\\d+) (\\w+)[ ]?");
-    static Pattern _look_end = Pattern.compile("\\]");
+    static final private Pattern _look_begin = Pattern.compile("list \\[");
+    static final private Pattern _look_repeat = Pattern.compile("([^\\s]+) (\\d+) (\\d+) (\\w+)[ ]?");
+    static final private Pattern _look_end = Pattern.compile("\\]");
+
+    /**
+     * Getfile protocole
+     */
+    static final private Pattern _getfile_begin = Pattern.compile("peers (\\w+) \\[");
+    static final private Pattern _getfile_repeat = Pattern.compile("(\\d{1,3}+\\.\\d{1,3}+\\.\\d{1,3}+\\.\\d{1,3}+):(\\d+)[ ]?");
+    static final private Pattern _getfile_end = Pattern.compile("\\]");
+
+    /**
+     * Interested protocol
+     */
+    static final private Pattern _interested = Pattern.compile("have (\\w+) ");
 
     /**
      * Initialise la connexion avec
@@ -70,41 +82,30 @@ class ClientProtocol extends Socket
             }
         }
         query += "]";
-        
         this.writeBytes(query.getBytes());
 
-        /**/
         InputStream reader_tmp = this.getInputStream();
-        BufferedInputStream reader = new BufferedInputStream(reader_tmp);
-        int size = 1024;
-        byte[] buffer = new byte[size];
-        int offset = 0;
-        while (true) {
-            int read = reader.read(buffer, offset, size-offset);
-            offset += read;
-            Matcher matcher = _announce.matcher(new String(buffer, 0, offset)); 
-            if (matcher.lookingAt()) {
-                return;
-            }
-            if (read == size-offset) {
-                size *= 2;
-                buffer = Arrays.copyOf(buffer, size);
-            }
-        }
-        /**/
+        RandomInputStream reader = new RandomInputStream(reader_tmp);
+
+        readBytesToPattern(reader, 0, _announce, null, null);
     }
 
     /**
      * Implémente le message de recherche de fichier
      * vers le tracker
      * @param filename : nom du fichier a rechercher
+     * @return String[]
+     * [0] : filename
+     * [1] : size
+     * [2] : piecesize
+     * [3] : key
+     * ...
      */
-    public void look(String filename) throws IOException
+    public String[] look(String filename) throws IOException
     {
         String query = "look [";
         query += "filename=\"" + filename + "\"";
         query += "]";
-
         this.writeBytes(query.getBytes());
         
         InputStream reader_tmp = this.getInputStream();
@@ -112,22 +113,75 @@ class ClientProtocol extends Socket
 
         ArrayList<String> groups = new ArrayList<String>();
     
-        int offset = 0;
-        offset += readBytesToPattern(reader, offset, _look_begin, null, groups);
-
-        int tmp = 0;
+        int offset = readBytesToPattern(reader, 0, _look_begin, null, groups);
         do {
-            tmp = readBytesToPattern(reader, offset, _look_repeat, _look_end, groups);
-            if (tmp != -1) {
-                offset += tmp;
+            int tmp = readBytesToPattern(reader, offset, _look_repeat, _look_end, groups);
+            if (tmp == -1) {
+                break;
             }
-        } while (tmp != -1);
-            
-        System.out.println(offset);
-        System.out.println(groups.size());
-        for (int i=0;i<groups.size();i++) {
-            System.out.println(groups.get(i));
+            offset += tmp;
+        } while (true);
+        
+        return groups.toArray(new String[0]);
+    }
+
+    /**
+     * Implémente le message de récupération des pairs
+     * possédant un fichier auprès du tracker
+     * @param key : la clef du fichier
+     * @return String[]
+     * [0] : ip
+     * [1] : port
+     * ...
+     */
+    public String[] getFile(String key) throws IOException
+    {
+        String query = "getfile " + key;
+        this.writeBytes(query.getBytes());
+        
+        InputStream reader_tmp = this.getInputStream();
+        RandomInputStream reader = new RandomInputStream(reader_tmp);
+        
+        ArrayList<String> groups = new ArrayList<String>();
+    
+        int offset = readBytesToPattern(reader, 0, _getfile_begin, null, groups);
+        if (!groups.get(0).equals(key)) {
+            throw new IOException("Protocol error");
         }
+        groups.remove(0);
+        do {
+            int tmp = readBytesToPattern(reader, offset, _getfile_repeat, _getfile_end, groups);
+            if (tmp == -1) {
+                break;
+            }
+            offset += tmp;
+        } while (true);
+        
+        return groups.toArray(new String[0]);
+    }
+
+    /**
+     * Implémente le message de d'interogation d'un pair
+     * pour connaitre son buffermap d'un fichier
+     * @param key : la clef du fichier
+     */
+    public void interested(String key) throws IOException
+    {
+        String query = "interested " + key;
+        this.writeBytes(query.getBytes());
+        
+        InputStream reader_tmp = this.getInputStream();
+        RandomInputStream reader = new RandomInputStream(reader_tmp);
+        
+        ArrayList<String> groups = new ArrayList<String>();
+    
+        int offset = readBytesToPattern(reader, 0, _interested, null, groups);
+        if (!groups.get(0).equals(key)) {
+            throw new IOException("Protocol error");
+        }
+
+        FileShared file = App.files.getByKey(key);
+        int buffermap_size = file.buffermapSize();
     }
 
     /**
@@ -152,7 +206,8 @@ class ClientProtocol extends Socket
      * Retourne -1 si le pattern de rejet est matcher
      * Si le pattern n'est pas reconnu, lecture jusqu'à ce que la socket timeout (exception)
      */
-    private int readBytesToPattern(RandomInputStream reader, int offset, Pattern pattern, Pattern reject, ArrayList<String> groups) throws IOException
+    private int readBytesToPattern(RandomInputStream reader, int offset, Pattern pattern, Pattern reject, ArrayList<String> groups) 
+        throws IOException
     {
         do {
             byte[] data = reader.read(offset);

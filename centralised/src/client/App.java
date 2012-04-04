@@ -33,8 +33,11 @@ class App
         try {
             ClientProtocol s = new ClientProtocol("127.0.0.1", 6000);
             s.announce();
-            Thread.sleep(4000);
-            s.look("pied.jpeg");
+            Thread.sleep(2000);
+            String[] g = s.getFile("8905e92afeb80fc7722ec89eb0bf0966");
+            for (int i=0;i<g.length;i++) {
+                System.out.println(g[i]);
+            }
         }
         catch (Exception e) {
             e.printStackTrace();

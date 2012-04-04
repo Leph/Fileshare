@@ -45,12 +45,13 @@ class RandomInputStream
     /**
      * Renvoi le buffer à la position offset
      * et le longueur len
+     * Attend si nécessaire
      */
     public byte[] read(int offset, int len) throws IOException
     {
         this.fillAvailable();
         if (offset >= _pos) {
-            return new byte[0];
+            throw new IllegalArgumentException();
         }
         else {
             int real_size = Math.min(len, _pos - offset);
@@ -63,7 +64,13 @@ class RandomInputStream
      */
     public byte[] read(int offset) throws IOException
     {
-        return this.read(offset, _pos - offset);
+        this.fillAvailable();
+        if (offset >= _pos) {
+            throw new IllegalArgumentException();
+        }
+        else {
+            return Arrays.copyOfRange(_buffer, offset, _pos);
+        }
     }
 
     /**
