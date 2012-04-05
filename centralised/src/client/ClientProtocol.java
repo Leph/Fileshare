@@ -38,6 +38,23 @@ class ClientProtocol extends Socket
     static final private Pattern _interested = Pattern.compile("have (\\w+) ");
 
     /**
+     * Getpieces protocol
+     */
+    static final private Pattern _getpieces_begin = Pattern.compile("data (\\w+) \\[");
+    static final private Pattern _getpieces_repeat = Pattern.compile("[ ]?(\\d+):");
+    static final private Pattern _getpieces_end = Pattern.compile("\\]");
+
+    /**
+     * Have protocol
+     */
+    static final private Pattern _have = Pattern.compile("have (\\w+) ");
+
+    /**
+     * Update protocol
+     */
+    static final private Pattern _update = Pattern.compile("ok");
+    
+    /**
      * Initialise la connexion avec
      * IP, port
      */
@@ -161,11 +178,12 @@ class ClientProtocol extends Socket
     }
 
     /**
-     * Implémente le message de d'interogation d'un pair
+     * Implémente le message de d'interrogation d'un pair
      * pour connaitre son buffermap d'un fichier
      * @param key : la clef du fichier
+     * @return Buffermap : le buffermap du pair pour le fichier
      */
-    public void interested(String key) throws IOException
+    public Buffermap interested(String key) throws IOException
     {
         String query = "interested " + key;
         this.writeBytes(query.getBytes());
@@ -182,6 +200,130 @@ class ClientProtocol extends Socket
 
         FileShared file = App.files.getByKey(key);
         int buffermap_size = file.buffermapSize();
+        byte[] buffermap_buf = reader.read(offset, buffermap_size);
+
+        return new Buffermap(buffermap_buf);
+    }
+
+    /**
+     * Implémente le message de récupération de pièce
+     * @param key : le clef du fichier
+     * @param indexes : les numéros de pièces à demander
+     * @return data : un array d'array d'octets des pieces demandées
+     * dans le même ordre que les index
+     */
+    public byte[][] getPieces(String key, int[] indexes) throws IOException
+    {
+        String query = "getpieces " + key + " [";
+        for (int i=0;i<indexes.length;i++) {
+            query += indexes[i];
+            if (i != indexes.length - 1) {
+                query += " ";
+            }
+        }
+        query += "]";
+        this.writeBytes(query.getBytes());
+        
+        InputStream reader_tmp = this.getInputStream();
+        RandomInputStream reader = new RandomInputStream(reader_tmp);
+        
+        ArrayList<String> groups = new ArrayList<String>();
+        
+        int offset = readBytesToPattern(reader, 0, _getpieces_begin, null, groups);
+        if (!groups.get(0).equals(key)) {
+            throw new IOException("Protocol error");
+        }
+        groups.remove(0);
+        
+        FileShared file = App.files.getByKey(key);
+        int piecesize = file.getPieceSize();
+
+        byte[][] data = new byte[indexes.length][];
+
+        for (int index=0;index<indexes.length;index++) {
+            int tmp = readBytesToPattern(reader, offset, _getpieces_repeat, _getpieces_end, groups);
+            if (tmp == -1) {
+                throw new IOException("Protocol error");
+            }
+            if (!groups.get(0).equals(String.valueOf(indexes[index]))) {
+                throw new IOException("Protocol error");
+            }
+            groups.remove(0);
+            offset += tmp;
+            data[index] = reader.read(offset, piecesize);
+        }
+
+        return data;
+    }
+
+    /**
+     * Implémente le message have d'échange d'information
+     * avec un autre pair
+     * @param key : la clef du fichier
+     * @return Buffermap : le nouveau buffermap du pair
+     */
+    public Buffermap have(String key) throws IOException
+    {
+        FileShared file = App.files.getByKey(key);
+
+        String query = "have " + key + " ";
+        byte[] query_buf = query.getBytes();
+        byte[] buffermap_buf = file.getRawBuffermap();
+        byte[] buffer = new byte[query_buf.length + buffermap_buf.length];
+        System.arraycopy(query_buf, 0, buffer, 0, query_buf.length);
+        System.arraycopy(buffermap_buf, 0, buffer, query_buf.length, buffermap_buf.length);
+        this.writeBytes(buffer);
+        
+        InputStream reader_tmp = this.getInputStream();
+        RandomInputStream reader = new RandomInputStream(reader_tmp);
+        
+        ArrayList<String> groups = new ArrayList<String>();
+    
+        int offset = readBytesToPattern(reader, 0, _have, null, groups);
+        if (!groups.get(0).equals(key)) {
+            throw new IOException("Protocol error");
+        }
+
+        int buffermap_size = file.buffermapSize();
+        buffermap_buf = reader.read(offset, buffermap_size);
+
+        return new Buffermap(buffermap_buf);
+    }
+
+    /**
+     * Implémente le message de mise à jour d'information
+     * pour le tracker
+     */
+    public void update() throws IOException
+    {
+        FileShared[] completefiles = App.files.getCompleteFiles();
+        FileShared[] tmpfiles = App.files.getTmpFiles();
+
+        String query = "update ";
+        query += "seed [";
+        for (int i=0;i<completefiles.length;i++) {
+            query += completefiles[i].getName() + " ";
+            query += completefiles[i].getSize() + " ";
+            query += completefiles[i].getPieceSize() + " ";
+            query += completefiles[i].getKey();
+            if (i != completefiles.length-1) {
+                query += " ";
+            }
+        }
+        query += "] leech [";
+        for (int i=0;i<tmpfiles.length;i++) {
+            query += completefiles[i].getKey();
+            if (i != tmpfiles.length-1) {
+                query += " ";
+            }
+        }
+        query += "]";
+        this.writeBytes(query.getBytes());
+
+        InputStream reader_tmp = this.getInputStream();
+        RandomInputStream reader = new RandomInputStream(reader_tmp);
+
+        readBytesToPattern(reader, 0, _update, null, null);
     }
 
     /**

@@ -40,6 +40,14 @@ class Buffermap
     }
 
     /**
+     * Renvoi le buffer brute interne
+     */
+    public byte[] rawBuffer()
+    {
+        return _buffer;
+    }
+
+    /**
      * Renvoi le nombre de bits du buffermap
      */
     public int bitSize()

@@ -54,8 +54,12 @@ class RandomInputStream
             throw new IllegalArgumentException();
         }
         else {
-            int real_size = Math.min(len, _pos - offset);
-            return Arrays.copyOfRange(_buffer, offset, offset + real_size);
+            while (_pos < offset + len) {
+                if (this.getData()) {
+                    throw new IOException("Protocol error");
+                }
+            }
+            return Arrays.copyOfRange(_buffer, offset, offset + len);
         }
     }
 
@@ -65,7 +69,7 @@ class RandomInputStream
     public byte[] read(int offset) throws IOException
     {
         this.fillAvailable();
-        if (offset >= _pos) {
+        if (offset > _pos) {
             throw new IllegalArgumentException();
         }
         else {

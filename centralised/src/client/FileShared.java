@@ -166,6 +166,15 @@ class FileShared extends File
     }
 
     /**
+     * Renvoi le buffermap brute sous forme
+     * d'array d'octets
+     */
+    public byte[] getRawBuffermap()
+    {
+        return _buffermap.rawBuffer();
+    }
+
+    /**
      * Indique si le fichier possède la piece
      * numeros num
      */
