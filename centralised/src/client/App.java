@@ -32,7 +32,7 @@ class App
 
         try {
             Protocol s = new Protocol("127.0.0.1", 6000);
-            s.update();
+            s.serverReadAndDispatch();
         }
         catch (Exception e) {
             e.printStackTrace();
