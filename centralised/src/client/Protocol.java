@@ -11,7 +11,7 @@ import java.io.IOException;
 import java.util.regex.Pattern;
 import java.util.regex.Matcher;
 
-class ClientProtocol extends Socket
+class Protocol extends Socket
 {
     /**
      * Announce protocol
@@ -53,12 +53,20 @@ class ClientProtocol extends Socket
      * Update protocol
      */
     static final private Pattern _update = Pattern.compile("ok");
+
+    /**
+     * Créer une connection vide
+     */
+    public Protocol()
+    {
+        super();
+    }
     
     /**
      * Initialise la connexion avec
      * IP, port
      */
-    public ClientProtocol(String ip, int port) throws UnknownHostException, IOException
+    public Protocol(String ip, int port) throws UnknownHostException, IOException
     {
         super(ip, port);
 
@@ -264,15 +272,9 @@ class ClientProtocol extends Socket
      */
     public Buffermap have(String key) throws IOException
     {
-        FileShared file = App.files.getByKey(key);
+        this.have_server(key);
 
-        String query = "have " + key + " ";
-        byte[] query_buf = query.getBytes();
-        byte[] buffermap_buf = file.getRawBuffermap();
-        byte[] buffer = new byte[query_buf.length + buffermap_buf.length];
-        System.arraycopy(query_buf, 0, buffer, 0, query_buf.length);
-        System.arraycopy(buffermap_buf, 0, buffer, query_buf.length, buffermap_buf.length);
-        this.writeBytes(buffer);
+        FileShared file = App.files.getByKey(key);
         
         InputStream reader_tmp = this.getInputStream();
         RandomInputStream reader = new RandomInputStream(reader_tmp);
@@ -285,7 +287,7 @@ class ClientProtocol extends Socket
         }
 
         int buffermap_size = file.buffermapSize();
-        buffermap_buf = reader.read(offset, buffermap_size);
+        byte[] buffermap_buf = reader.read(offset, buffermap_size);
 
         return new Buffermap(buffermap_buf);
     }
@@ -326,8 +328,85 @@ class ClientProtocol extends Socket
         readBytesToPattern(reader, 0, _update, null, null);
     }
 
+    public void serverReadAndDispatch() throws IOException
+    {
+        InputStream reader = this.getInputStream();
+        String command = "";
+        while (true) {
+            int b = reader.read();
+            if (b == -1) {
+                throw new IOException("Connection ended");
+            }
+            if ((char)b == ' ') {
+                break;
+            }
+            else {
+                command += (char)b;
+            }
+        }
+
+        String key = "";
+        while (true) {
+            int b = reader.read();
+            if (b == -1) {
+                throw new IOException("Connection ended");
+            }
+            if ((char)b == ' ') {
+                break;
+            }
+            else {
+                command += (char)b;
+            }
+        }
+    
+
+    }
+
     /**
-     * Ecrit le buffer spécifié dasn la socket
+     * Implémente la réponse have du serveur
+     * @param key : la clé du fichier
+     */
+    private void have_server(String key) throws IOException
+    {
+        FileShared file = App.files.getByKey(key);
+
+        String query = "have " + key + " ";
+        byte[] buffer = Tools.concatBytes(query.getBytes(), file.getRawBuffermap());
+    
+        this.writeBytes(buffer);
+    }
+
+    /**
+     * Implémente la réponse data du server
+     * @param key : la clé du fichier
+     * @param indexes : le tableau du numéros des pièces demandées
+     */
+    private void data_server(String key, int[] indexes) throws IOException
+    {
+        FileShared file = App.files.getByKey(key);
+        
+        String query = "data " + key + "[";
+        byte[] buffer = query.getBytes();
+
+        for (int i=0;i<indexes.length;i++) {
+            if (!file.hasPiece(indexes[i])) {
+                throw new IllegalArgumentException("Protocol invalid index");
+            }
+            String tmp1 = i + ":";
+            buffer = Tools.concatBytes(buffer, file.readPiece(indexes[i]));
+            if (i != indexes.length-1) {
+                String tmp2 = " ";
+                buffer = Tools.concatBytes(buffer, tmp2.getBytes());
+            }
+        }
+        String end = "]";
+        buffer = Tools.concatBytes(buffer, end.getBytes());
+        
+        this.writeBytes(buffer);
+    }
+
+    /**
+     * Ecrit le buffer spécifié dans la socket
      */
     private void writeBytes(byte[] buffer) throws IOException
     {

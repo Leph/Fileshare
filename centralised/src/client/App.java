@@ -31,7 +31,7 @@ class App
         testFileShared();
 
         try {
-            ClientProtocol s = new ClientProtocol("127.0.0.1", 6000);
+            Protocol s = new Protocol("127.0.0.1", 6000);
             s.update();
         }
         catch (Exception e) {
