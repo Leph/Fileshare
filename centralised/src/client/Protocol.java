@@ -55,6 +55,13 @@ class Protocol extends Socket
     static final private Pattern _update = Pattern.compile("ok");
 
     /**
+     * Data protocol server
+     */
+    static final Pattern _data_begin = Pattern.compile(" \\[");
+    static final Pattern _data_repeat = Pattern.compile("(\\d+)[ ]?");
+    static final Pattern _data_end = Pattern.compile("\\]");
+
+    /**
      * Créer une connection vide
      */
     public Protocol()
@@ -314,7 +321,7 @@ class Protocol extends Socket
         }
         query += "] leech [";
         for (int i=0;i<tmpfiles.length;i++) {
-            query += completefiles[i].getKey();
+            query += tmpfiles[i].getKey();
             if (i != tmpfiles.length-1) {
                 query += " ";
             }
@@ -330,36 +337,84 @@ class Protocol extends Socket
 
     public void serverReadAndDispatch() throws IOException
     {
+        String msg_interested = "interested";
+        String msg_get = "getpieces";
+        String msg_have = "have";
+
         InputStream reader = this.getInputStream();
-        String command = "";
+        String command;
         while (true) {
-            int b = reader.read();
-            if (b == -1) {
-                throw new IOException("Connection ended");
+            command = "";
+            while (true) {
+                int b = reader.read();
+                if (b == -1) throw new IOException("Connection ended");
+                if ((char)b == ' ') break;
+                else command += (char)b;
             }
-            if ((char)b == ' ') {
-                break;
-            }
-            else {
-                command += (char)b;
-            }
+            if (
+                command.equals(msg_have) ||
+                command.equals(msg_get) ||
+                command.equals(msg_interested)) break;
         }
 
-        String key = new String[32];
-        while (true) {
+        String key = "";
+        for (int i=0;i<32;i++) {
             int b = reader.read();
-            if (b == -1) {
-                throw new IOException("Connection ended");
-            }
-            if ((char)b == ' ') {
-                break;
-            }
-            else {
-                command += (char)b;
-            }
+            if (b == -1) throw new IOException("Connection ended");
+            if ((char)b == ' ') throw new IOException("Protocol error");
+            key += (char)b;
         }
     
+        System.out.println(command);
+        System.out.println(key);
+        if (command.equals(msg_interested)) {
+            this.have_server(key);
+        }
+        if (command.equals(msg_get)) {
+            int b = reader.read();
+            if (b == -1) throw new IOException("Connection ended");
+            if ((char)b != ' ') throw new IOException("Protocol error");
+            b = reader.read();
+            if (b == -1) throw new IOException("Connection ended");
+            if ((char)b != '[') throw new IOException("Protocol error");
 
+            ArrayList<Integer> indexes = new ArrayList<Integer>();
+            do {
+                String index = "";
+                do {
+                    b = reader.read();
+                    if (b == -1) throw new IOException("Connection ended");
+                    if ((char)b != ' ' && (char)b != ']') index += (char)b;
+                }while ((char)b != ' ' && (char)b != ']');
+                indexes.add(Integer.parseInt(index));
+            } while ((char)b != ']');
+        
+            int[] indexes_tmp = new int[indexes.size()];
+            for (int i=0;i<indexes.size();i++) {
+                indexes_tmp[i] = indexes.get(i);
+            }
+    
+            this.data_server(key, indexes_tmp);
+        }
+        if (command.equals(msg_have)) {
+            int b = reader.read();
+            if (b == -1) throw new IOException("Connection ended");
+            if ((char)b != ' ') throw new IOException("Protocol error");
+
+            FileShared file = App.files.getByKey(key);
+            int len = 0;
+            int buffermap_size = file.buffermapSize();
+            byte[] buffermap_buf = new byte[buffermap_size];
+            while (len < buffermap_size) {
+                int read = reader.read(buffermap_buf, len, buffermap_size - len);
+                if (read == -1) throw new IOException("Connection ended");
+                len += read;
+            }
+
+            /*TODO : UTILISER BUFFERMAP_BUF : TODO*/
+    
+            this.have_server(key);
+        }
     }
 
     /**
