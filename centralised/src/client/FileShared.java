@@ -92,6 +92,8 @@ class FileShared extends File
             throw new IllegalArgumentException();
         }
 
+        assert key.length() == 32;
+
         _key = key;
         _size = size;
         _piecesize = piecesize;
@@ -348,6 +350,7 @@ class FileShared extends File
         _size = (int)this.length();
         _piecesize = (Integer)App.config.get("pieceSize");
         _key = this.computeHash();
+        assert _key.length() == 32;
     }
 
     /**

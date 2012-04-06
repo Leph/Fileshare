@@ -112,9 +112,9 @@ class App
     {
         System.out.println("**** TEST FileShared");
 
-        FileShared f = new FileShared("test", "azerty", 10, 3);
+        FileShared f = new FileShared("test", "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", 10, 3);
         assert f.getName().equals("test"+App.config.get("tmpExtension"));
-        assert f.getKey().equals("azerty");
+        assert f.getKey().equals("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa");
         assert f.getSize() == 10;
         assert f.getPieceSize() == 3;
         assert f.isComplete() == false;
@@ -146,7 +146,7 @@ class App
 
         FileShared f2 = new FileShared("test.tmp");
         assert f2.getName().equals("test"+App.config.get("tmpExtension"));
-        assert f2.getKey().equals("azerty");
+        assert f2.getKey().equals("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa");
         assert f2.getSize() == 10;
         assert f2.getPieceSize() == 3;
         assert f2.isComplete() == false;

@@ -22,32 +22,32 @@ class Protocol extends Socket
      * Look protocol
      */
     static final private Pattern _look_begin = Pattern.compile("list \\[");
-    static final private Pattern _look_repeat = Pattern.compile("([^\\s]+) (\\d+) (\\d+) (\\w+)[ ]?");
+    static final private Pattern _look_repeat = Pattern.compile("([^\\s]+) (\\d+) (\\d+) (\\w{32})[ ]?");
     static final private Pattern _look_end = Pattern.compile("\\]");
 
     /**
      * Getfile protocole
      */
-    static final private Pattern _getfile_begin = Pattern.compile("peers (\\w+) \\[");
+    static final private Pattern _getfile_begin = Pattern.compile("peers (\\w{32}) \\[");
     static final private Pattern _getfile_repeat = Pattern.compile("(\\d{1,3}+\\.\\d{1,3}+\\.\\d{1,3}+\\.\\d{1,3}+):(\\d+)[ ]?");
     static final private Pattern _getfile_end = Pattern.compile("\\]");
 
     /**
      * Interested protocol
      */
-    static final private Pattern _interested = Pattern.compile("have (\\w+) ");
+    static final private Pattern _interested = Pattern.compile("have (\\w{32}) ");
 
     /**
      * Getpieces protocol
      */
-    static final private Pattern _getpieces_begin = Pattern.compile("data (\\w+) \\[");
+    static final private Pattern _getpieces_begin = Pattern.compile("data (\\w{32}) \\[");
     static final private Pattern _getpieces_repeat = Pattern.compile("[ ]?(\\d+):");
     static final private Pattern _getpieces_end = Pattern.compile("\\]");
 
     /**
      * Have protocol
      */
-    static final private Pattern _have = Pattern.compile("have (\\w+) ");
+    static final private Pattern _have = Pattern.compile("have (\\w{32}) ");
 
     /**
      * Update protocol
@@ -345,7 +345,7 @@ class Protocol extends Socket
             }
         }
 
-        String key = "";
+        String key = new String[32];
         while (true) {
             int b = reader.read();
             if (b == -1) {
