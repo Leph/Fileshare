@@ -33,28 +33,24 @@ class App
         testBuffermap();
         testFileShared();
 
-	try {
-		Thread autoRefresher = new Thread(new Runnable(){
-			@Override
-			public void run(){
-				while (true){
-					try{
-						wait(((Integer)(App.config.get("timeslice"))).intValue()*1000);
-						// ->"have $key $BufferMap" au pairs connectes
-					}catch (Exception ex){
-						ex.printStackTrace();
-					}
-				}
-			}
-		});
-            ClientProtocol s = new ClientProtocol("127.0.0.1", 6000);
-            s.announce();
-            Thread.sleep(4000);
-            s.look("pied.jpeg");
-	    autoRefresher.start();
-
+        try {
+            /*
+            Thread autoRefresher = new Thread(new Runnable(){
+                @Override
+                public void run(){
+                    while (true){
+                        try{
+                            wait(((Integer)(App.config.get("timeslice"))).intValue()*1000);
+                            // ->"have $key $BufferMap" au pairs connectes
+                        }catch (Exception ex){
+                            ex.printStackTrace();
+                        }
+                    }
+                }
+            });
+            */
             Protocol s = new Protocol("127.0.0.1", 6000);
-            s.update();
+            s.serverReadAndDispatch();
         }
         catch (Exception e) {
             e.printStackTrace();
