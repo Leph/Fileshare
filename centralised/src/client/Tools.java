@@ -113,5 +113,17 @@ class Tools
         assert bb.length == size;
         return bb;
     }
+
+    /**
+     * Concatène deux buffer d'octets et renvoi le résultat
+     */
+    public static byte[] concatBytes(byte[] b1, byte[] b2)
+    {
+        byte[] buffer = new byte[b1.length + b2.length];
+        System.arraycopy(b1, 0, buffer, 0, b1.length);
+        System.arraycopy(b2, 0, buffer, b1.length, b2.length);
+
+        return buffer;
+    }
 }
 

@@ -52,6 +52,9 @@ class App
             Thread.sleep(4000);
             s.look("pied.jpeg");
 	    autoRefresher.start();
+
+            Protocol s = new Protocol("127.0.0.1", 6000);
+            s.serverReadAndDispatch();
         }
         catch (Exception e) {
             e.printStackTrace();

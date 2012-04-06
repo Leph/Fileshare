@@ -143,6 +143,15 @@ class FileShared extends File
     }
 
     /**
+     * Renvoi la taille du buffermap
+     * en octets
+     */
+    public int buffermapSize()
+    {
+        return _buffermap.size();
+    }
+
+    /**
      * Renvoi le nombre de pièce du fichier
      */
     public int nbPieces()
@@ -154,6 +163,15 @@ class FileShared extends File
         else {
             return nb+1;
         }
+    }
+
+    /**
+     * Renvoi le buffermap brute sous forme
+     * d'array d'octets
+     */
+    public byte[] getRawBuffermap()
+    {
+        return _buffermap.rawBuffer();
     }
 
     /**

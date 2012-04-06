@@ -1,87 +1,88 @@
-\section{Tracker}
-Le tracker consiste à faire le lien entre les différents pairs, il récupère les informations de chaque client, les stocke et les redistribue au besoin. Le langage choisi pour implémenter cette application est le C. Le travail effectué sur le tracker s'articule en 3 parties:
+\section{Tracker} 
+Le tracker consiste à faire le lien entre les différents pairs, il récupère les informations de chaque client, les stocke et les redistribue au besoin. Le langage choisi pour implémenter cette application est le C. Le travail effectué sur le tracker s'articule en 3 parties: 
+ 
+\begin{itemize} 
+\item le serveur TCP 
+\item la base de données 
+\item le parseur de requêtes 
+\item le traitement des requêtes 
+\end{itemize} 
+ 
+\subsection{La base de données} 
+La base de données repose essentiellement sur une liste de structures "\texttt{struct mainTrackerElement}". Chaque \texttt{mainTrackerElement} de cette liste correspond à un fichier et est repéré par sa clé md5, car en effet, c'est le seul paramètre qui permet d'identifier un fichier de manière unique et qui permet ainsi le moins de redondance d'informations dans la base. Ci-dessous le code de cette structure: 
+ 
+\begin{verbatim} 
+struct mainTrackerElement { 
+        struct link* peers; 
+        char *keyP; 
+        int size; 
+        int pieceSize; 
+        struct link* noms; 
+}; 
+\end{verbatim} 
+ 
+\begin{itemize} 
+\item \texttt{struct link *peers} liste les différents pairs sous forme de chaîne de caractères du type [\$IP1:\$PORT1 ...]. 
+\item \texttt{char *keyP} est la clé md5 correspondant au fichier. 
+\item \texttt{int size} est la taille du fichier en octets. 
+\item \texttt{int pieceSize} est la taille des pièces en octets. 
+\item \texttt{struct link *noms} liste les différents noms de ce fichier sous forme de chaîne de caractères. 
+\end{itemize} 
+ 
+\subsection{Le parseur de requêtes} 
+Pour le parseur de requêtes le choix a été fait d'utiliser lex/yacc. L'utilisation d'une grammaire a été privilégié pour sa flexibilité - il est par exemple possible d'inverser les paramètres, ne pas se soucier des espaces etc. - et étant donné que le sujet de projet était sujet à des mises à jour, les modifications du code probables étaient ainsi rendues plus simples.\\ 
+L'une des difficultés était de faire accepter en entrée du parseur une chaîne de caractères de type \texttt{char*} car yacc n'est pas prévu pour de manière native. Il a donc fallu coder une fonction \texttt{readInput()} pour simuler la lecture dans un fichier. Ensuite, il a fallu spécifier un lexeur (avec $lex$) pour analyser les mots de la requête et enfin une grammaire qui en parcourant l'arbre syntaxique, rempli une structure de données qui contiendra toutes les informations incluses dans chaque requête. Ci-dessous la structure en question: 
+ 
+\begin{verbatim} 
+struct commandLine { 
+        enum type type; 
+ 
+        // announce: 
+        int port; 
+        int filesNumber; 
+        char* fileNames[MAX_FILES_NUMBER]; 
+        int lengths[MAX_FILES_NUMBER]; 
+        int pieceSize[MAX_FILES_NUMBER]; 
+        char *keys[MAX_FILES_NUMBER]; 
+ 
+        // look: 
+        char *fileName; 
+        int supTo; 
+        int infTo; 
+ 
+        // getfile: 
+        char *getKey; 
+ 
+        // update: 
+        int seedKeysNumber; 
+        int leechKeysNumber; 
+        int isSeeder; 
+        int isLeecher; 
+        char* seedKeys[MAX_FILES_NUMBER]; 
+        char* leechKeys[MAX_FILES_NUMBER]; 
+}; 
+\end{verbatim} 
+ 
+Chaque bloque correspondant à un type de requête (\texttt{announce}, \texttt{getfile}, \texttt{getfile} ou \texttt{update}). 
+Cette structure est déclarée dans le programme en tant que variable globale afin d'être accessible par $yacc$. Elle fait partie des données sur lesquelles il faut mettre un mutex pour gérer les accès concurrents des différents clients. 
+ 
+\subsection{Le serveur TCP} 
+Cette partie repose simplement sur 3 fonctions: 
+ 
+\begin{itemize} 
+\item \texttt{cree\_socket\_stream()} consiste à initialiser la connexion en créant la socket ($socket()$) et la liant à un point de communication ($bind()$) défini par l'adresse locale et le port d'écoute. 
+\item \texttt{serveur\_tcp()} écoute sur la port prévu ($listen()$) \texttt{socket\_contact} et créé un thread ($pthread\_create()$) par connexion entrante. 
+\item \texttt{traite\_connexion()} est la fonction de thread: elle prend en paramètre le descripteur de socket retourné par ($accept()$). Cette fonction reçoit une requête grâce à $recv()$ puis lance le parseur par \texttt{yyparse()}. A ce moment là, elle lance la fonction \texttt{cloneCommandLine()} qui clone la structure contenant les données de la requête afin de libérer cette ressource partagée et lance la fonction de traitement appropriée en fonction du type de la requête. 
+\end{itemize} 
+ 
+Les fonctions de traitement sont au nombre de 4 et chacune correspond à un type de requête: 
+ 
+\begin{itemize} 
+\item \texttt{announce\_tracker()} 
+\item \texttt{look\_tracker()} 
+\item \texttt{getFile\_tracket()} 
+\item \texttt{update\_tracker()} 
+\end{itemize} 
+ 
+Chacune de ces fonctions effectue le traitement associé au type de la requête (mises à jour, recherche, modifications etc.).         
 
-\begin{itemize}
-\item le serveur TCP
-\item la base de données
-\item le parseur de requêtes
-\item le traitement des requêtes
-\end{itemize}
-
-\subsection{La base de données}
-La base de données repose essentiellement sur une liste de structures "\texttt{struct mainTrackerElement}". Chaque \texttt{mainTrackerElement} de cette liste correspond à un fichier et est repéré par sa clé md5, car en effet, c'est le seul paramètre qui permet d'identifier un fichier de manière unique et qui permet ainsi le moins de redondance d'informations dans la base. Ci-dessous le code de cette structure:
-
-\begin{verbatim}
-struct mainTrackerElement {
-        struct link* peers;
-        char *keyP;
-        int size;
-        int pieceSize;
-        struct link* noms;
-};
-\end{verbatim}
-
-\begin{itemize}
-\item \texttt{struct link *peers} liste les différents pairs sous forme de chaîne de caractères du type [\$IP1:\$PORT1 ...].
-\item \texttt{char *keyP} est la clé md5 correspondant au fichier.
-\item \texttt{int size} est la taille du fichier en octets.
-\item \texttt{int pieceSize} est la taille des pièces en octets.
-\item \texttt{struct link *noms} liste les différents noms de ce fichier sous forme de chaîne de caractères.
-\end{itemize}
-
-\subsection{Le parseur de requêtes}
-Pour le parseur de requêtes le choix a été fait d'utiliser lex/yacc. L'utilisation d'une grammaire a été privilégié pour sa flexibilité - il est par exemple possible d'inverser les paramètres, ne pas se soucier des espaces etc. - et étant donné que le sujet de projet était sujet à des mises à jour, les modifications du code probables étaient ainsi rendues plus simples.\\
-L'une des difficultés était de faire accepter en entrée du parseur une chaîne de caractères de type \texttt{char*} car yacc n'est pas prévu pour de manière native. Il a donc fallu coder une fonction \texttt{readInput()} pour simuler la lecture dans un fichier. Ensuite, il a falllu spécifier un lexeur (avec $lex$) pour analyser les mots de la requête et enfin une grammaire qui en parcourant l'arbre synthaxique, rempli une structure de données qui contiendra toutes les informations incluses dans chaque requête. Ci-dessous la structure en question:
-
-\begin{verbatim}
-struct commandLine {
-        enum type type;
-
-        // announce:
-        int port;
-        int filesNumber;
-        char* fileNames[MAX_FILES_NUMBER];
-        int lengths[MAX_FILES_NUMBER];
-        int pieceSize[MAX_FILES_NUMBER];
-        char *keys[MAX_FILES_NUMBER];
-
-        // look:
-        char *fileName;
-        int supTo;
-        int infTo;
-
-        // getfile:
-        char *getKey;
-
-        // update:
-        int seedKeysNumber;
-        int leechKeysNumber;
-        int isSeeder;
-        int isLeecher;
-        char* seedKeys[MAX_FILES_NUMBER];
-        char* leechKeys[MAX_FILES_NUMBER];
-};
-\end{verbatim}
-
-Chaque bloque correspondant à un type de requête (\texttt{announce}, \texttt{getfile}, \texttt{getfile} ou \texttt{update}).
-Cette structure est déclarée dans le programme en tant que variable globale afin d'être accessible par $yacc$. Elle fait partie des données sur lesquelles il faut mettre un mutex pour gérer les accès concurrents des différents clients.
-
-\subsection{Le serveur TCP}
-Cette partie repose simplement sur 3 fonctions:
-
-\begin{itemize}
-\item \texttt{cree\_socket\_stream()} consiste à initialiser la connexion en créant la socket ($socket()$) et la liant à un point de communication ($bind()$) défini par l'adresse locale et le port d'écoute.
-\item \texttt{serveur\_tcp()} écoute sur la port prévu ($listen()$) \texttt{socket\_contact} et créé un thread ($pthread\_create()$) par connexion entrante.
-\item \texttt{traite\_connexion()} est la fonction de thread: elle prend en paramètre le descripteur de socket retourné par ($accept()$). Cette fonction reçoit une requête grâce à $recv()$ puis lance le parseur par \texttt{yyparse()}. A ce moment là, elle lance la fonction \texttt{cloneCommandLine()} qui clone la structure contenant les données de la requête afin de libérer cette ressource partagée et lance la fonction de traitement appropriée en fonction du type de la requête.
-\end{itemize}
-
-Les fonctions de traitement sont au nombre de 4 et chacune correspond à un type de requête:
-
-\begin{itemize}
-\item \texttt{announce\_tracker()}
-\item \texttt{look\_tracker()}
-\item \texttt{getFile\_tracket()}
-\item \texttt{update\_tracker()}
-\end{itemize}
-
-Chacune de ces fonctions effectue le traitement associé au type de la requête (mises à jour, recherche, modifications etc.).        
