@@ -54,7 +54,7 @@ class App
 	    autoRefresher.start();
 
             Protocol s = new Protocol("127.0.0.1", 6000);
-            s.serverReadAndDispatch();
+            s.update();
         }
         catch (Exception e) {
             e.printStackTrace();

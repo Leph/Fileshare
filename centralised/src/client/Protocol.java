@@ -330,28 +330,18 @@ class Protocol extends Socket
 
     public void serverReadAndDispatch() throws IOException
     {
-        String command1 = "have";
-        String command2 = "getpieces";
-        String command3 = "interested";
-
         InputStream reader = this.getInputStream();
-        String command;
+        String command = "";
         while (true) {
-            command = "";
-            while (true) {
-                int b = reader.read();
-                if (b == -1) {
-                    throw new IOException("Connection ended");
-                }
-                if ((char)b == ' ') {
-                    break;
-                }
-                else {
-                    command += (char)b;
-                }
+            int b = reader.read();
+            if (b == -1) {
+                throw new IOException("Connection ended");
             }
-            if (command.equals(command1) || command.equals(command2) || command.equals(command3)) {
+            if ((char)b == ' ') {
                 break;
+            }
+            else {
+                command += (char)b;
             }
         }
 
@@ -365,13 +355,11 @@ class Protocol extends Socket
                 break;
             }
             else {
-                key += (char)b;
+                command += (char)b;
             }
         }
+    
 
-        if (command.equals(command1)) {
-
-        }
     }
 
     /**
