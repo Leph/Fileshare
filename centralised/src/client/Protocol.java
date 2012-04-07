@@ -78,7 +78,7 @@ class Protocol extends Socket
         super(ip, port);
 
         try {
-            this.setSoTimeout((Integer)App.config.get("socketTimeout"));
+            this.setSoTimeout((Integer)App.config.get("socketClientTimeout"));
         }
         catch (SocketException e) {
             System.out.println("Unable to set timeout");

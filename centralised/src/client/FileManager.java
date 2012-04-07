@@ -36,6 +36,7 @@ class FileManager
      */
     private void scanCompleteDir()
     {
+        System.out.println("Looking for completes files : " + (String)App.config.get("downloadDir"));
         File dir = new File((String)App.config.get("downloadDir"));
         if (!dir.exists() || !dir.isDirectory()) {
             System.out.println("Unable to read directory : " + 
@@ -55,6 +56,7 @@ class FileManager
      */
     private void scanTmpDir()
     {
+        System.out.println("Looking for tmp files : " + (String)App.config.get("tmpDir"));
         File dir = new File((String)App.config.get("tmpDir"));
         if (!dir.exists() || !dir.isDirectory()) {
             System.out.println("Unable to read directory : " + 

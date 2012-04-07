@@ -50,6 +50,7 @@ public class Config
      */
     public void load(String filename)
     {
+        System.out.println("Reading configuration file : " + filename);
         try {
             FileInputStream fstream = new FileInputStream(filename);
             DataInputStream in = new DataInputStream(fstream);

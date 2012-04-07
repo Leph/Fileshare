@@ -1,0 +1,44 @@
+/**
+ * Représente le thread d'une connexion serveur 
+ * du pair
+ */
+
+import java.io.*;
+import java.lang.*;
+
+class ServerConnectionThread extends Thread
+{
+    /**
+     * Socket de communication
+     * implémentant le protocol
+     */
+    Protocol _socket;
+
+    /**
+     * Créer le thread gérant une connexion serveur
+     */
+    ServerConnectionThread(Protocol socket)
+    {
+        super();
+        _socket = socket;
+    }
+
+    /**
+     * Fonction principale du thread
+     *
+     * Traite les messages entrants
+     */
+    public void run()
+    {
+        try {
+            while (true) {
+                _socket.serverReadAndDispatch();
+            }
+        }
+        catch (Exception e)
+        {
+            System.out.println("End server connection :");
+            e.printStackTrace();
+        }
+    }
+}

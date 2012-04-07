@@ -26,12 +26,14 @@ class App
     {
         App.config.load("config");
         App.files.init();
+        ServerListenThread server = new ServerListenThread();
+        server.start();
 	
 
-        testConfig();
-        testFileManager();
-        testBuffermap();
-        testFileShared();
+        //testConfig();
+        //testFileManager();
+        //testBuffermap();
+        //testFileShared();
 
         try {
             /*
