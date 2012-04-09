@@ -4,8 +4,6 @@
  */
 
 import java.io.*;
-import java.lang.Runnable;
-import java.lang.Thread;
 
 class App
 {
@@ -20,15 +18,24 @@ class App
     static public FileManager files = new FileManager();
 
     /**
+     * PeerManager
+     */
+    static public PeerManager peers = new PeerManager();
+
+    /**
+     * DownloadManager
+     */
+    static public DownloadManager downloads = new DownloadManager();
+
+    /**
      * Fonction main
      */
     public static void main(String args[])
     {
         App.config.load("config");
         App.files.init();
-        ServerListenThread server = new ServerListenThread();
-        server.start();
-	
+        App.downloads.initServer();
+        App.downloads.initDownloads();
 
         //testConfig();
         //testFileManager();
@@ -51,8 +58,8 @@ class App
                 }
             });
             */
-            Protocol s = new Protocol("127.0.0.1", 6000);
-            s.serverReadAndDispatch();
+            //Protocol s = new Protocol("127.0.0.1", 6000);
+            //s.serverReadAndDispatch();4
         }
         catch (Exception e) {
             e.printStackTrace();

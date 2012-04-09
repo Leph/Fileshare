@@ -37,6 +37,7 @@ class ServerConnectionThread extends Thread
         }
         catch (Exception e)
         {
+            /*TODO fermer la socket */
             System.out.println("End server connection :");
             e.printStackTrace();
         }

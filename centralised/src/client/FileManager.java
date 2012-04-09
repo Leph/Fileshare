@@ -85,7 +85,7 @@ class FileManager
     public FileShared getByKey(String key)
     {
         if (_files.get(key) == null) {
-            throw new IllegalArgumentException();
+            throw new IllegalArgumentException("Unknown key");
         }
         else {
             return _files.get(key);

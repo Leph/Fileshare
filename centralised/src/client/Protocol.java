@@ -89,7 +89,7 @@ class Protocol extends Socket
     /**
      * Implémente le message d'annonce au tracker
      */
-    public void announce() throws IOException
+    synchronized public void announce() throws IOException
     {
         FileShared[] completefiles = App.files.getCompleteFiles();
         FileShared[] tmpfiles = App.files.getTmpFiles();
@@ -133,7 +133,7 @@ class Protocol extends Socket
      * [3] : key
      * ...
      */
-    public String[] look(String filename) throws IOException
+    synchronized public String[] look(String filename) throws IOException
     {
         String query = "look [";
         query += "filename=\"" + filename + "\"";
@@ -166,7 +166,7 @@ class Protocol extends Socket
      * [1] : port
      * ...
      */
-    public String[] getFile(String key) throws IOException
+    synchronized public String[] getFile(String key) throws IOException
     {
         String query = "getfile " + key;
         this.writeBytes(query.getBytes());
@@ -198,7 +198,7 @@ class Protocol extends Socket
      * @param key : la clef du fichier
      * @return Buffermap : le buffermap du pair pour le fichier
      */
-    public Buffermap interested(String key) throws IOException
+    synchronized public Buffermap interested(String key) throws IOException
     {
         String query = "interested " + key;
         this.writeBytes(query.getBytes());
@@ -227,7 +227,7 @@ class Protocol extends Socket
      * @return data : un array d'array d'octets des pieces demandées
      * dans le même ordre que les index
      */
-    public byte[][] getPieces(String key, int[] indexes) throws IOException
+    synchronized public byte[][] getPieces(String key, int[] indexes) throws IOException
     {
         String query = "getpieces " + key + " [";
         for (int i=0;i<indexes.length;i++) {
@@ -277,7 +277,7 @@ class Protocol extends Socket
      * @param key : la clef du fichier
      * @return Buffermap : le nouveau buffermap du pair
      */
-    public Buffermap have(String key) throws IOException
+    synchronized public Buffermap have(String key) throws IOException
     {
         this.have_server(key);
 
@@ -303,7 +303,7 @@ class Protocol extends Socket
      * Implémente le message de mise à jour d'information
      * pour le tracker
      */
-    public void update() throws IOException
+    synchronized public void update() throws IOException
     {
         FileShared[] completefiles = App.files.getCompleteFiles();
         FileShared[] tmpfiles = App.files.getTmpFiles();
@@ -365,8 +365,6 @@ class Protocol extends Socket
             key += (char)b;
         }
     
-        System.out.println(command);
-        System.out.println(key);
         if (command.equals(msg_interested)) {
             this.have_server(key);
         }

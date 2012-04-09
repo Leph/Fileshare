@@ -28,15 +28,23 @@ class ServerListenThread extends Thread
     {
         int port = (Integer)App.config.get("listenPort");
         System.out.println("Starting listening port : " + port);
-        while (true) {
-            try {
-                ListenServerSocket server = new ListenServerSocket(port);
-                Protocol socket = server.accept();
+        try {
+            ListenServerSocket server = new ListenServerSocket(port);
+            while (true) {
+                try {
+                    Protocol socket = server.accept();
+                    ServerConnectionThread connection = new ServerConnectionThread(socket);
+                    connection.start();
+                }
+                catch (IOException e) {
+                    System.out.println("Error accept connection :");
+                    e.printStackTrace();
+                }
             }
-            catch (IOException e) {
-                System.out.println("Error listen server :");
-                e.printStackTrace();
-            }
+        }
+        catch (IOException e) {
+            System.out.println("Error listen server :");
+            e.printStackTrace();
         }
     }
 }

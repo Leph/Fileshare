@@ -89,7 +89,7 @@ class FileShared extends File
         );
 
         if (this.exists()) {
-            throw new IllegalArgumentException();
+            throw new IllegalArgumentException("File already exists : " + name);
         }
 
         assert key.length() == 32;
