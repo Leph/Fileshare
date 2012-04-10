@@ -37,6 +37,15 @@ class FileShared extends File
     private boolean _iscomplete;
 
     /**
+     * Ensemble de pair possédant le fichier
+     * La clef représente le hash distinctif du pair
+     * dans le PeerManager
+     * La valeur représente le buffermap du pair pour
+     * ce fichier
+     */
+    public Map<String, Buffermap> peers;
+
+    /**
      * Créer un nouveau fichier déjà connue
      * Il peut etre complet ou en cours de téléchargement
      *
@@ -58,6 +67,8 @@ class FileShared extends File
             System.out.println("Invalid file : " + name);
             throw new IllegalArgumentException();
         }
+
+        this.peers = new HashMap<String, Buffermap>();
 
         if (name.endsWith((String)App.config.get("tmpExtension"))) {
             _iscomplete = false;
@@ -108,6 +119,8 @@ class FileShared extends File
             buffersize = buffersize / 8 + 1;
         }
         _buffermap = new Buffermap(buffersize);
+
+        this.peers = new HashMap<String, Buffermap>();
 
         this.initHeaderTmpFile();
     }

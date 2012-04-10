@@ -23,5 +23,9 @@ socketServerTimeout = 60000
 #Port d'écoute des autres pairs
 listenPort = 60000
 
-#Time slice en second pour faire un automatique mis a jours
-timeslice = 10
+#Port découte du tracker
+trackerPort = 6000
+
+#Adresse IP du tracker
+trackerIP = 127.0.0.1
+

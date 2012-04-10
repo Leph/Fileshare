@@ -42,19 +42,24 @@ class PeerManager
     }
 
     /**
-     * Créer et ajoute un pair au manager
-     * et tente d'établir une connexion
-     * @return Peer si succès, renvoi null sinon
+     * Ajoute, créer un pair au manager et
+     * tente d'établir une connexion si le pair
+     * n'est pas présent
+     * @return String contenant le hash du Peer
+     * si succès, renvoi null sinon
      */
-    public Peer add(String ip, int port)
+    public String add(String ip, int port)
     {
         try {
-            Peer peer = new Peer(ip, port);
-            _peers.put(peer.getHash(), peer);
-            return peer;
+            String hash = Peer.computeHash(ip, port);
+            if (_peers.get(hash) == null) {
+                Peer peer = new Peer(ip, port);
+                _peers.put(peer.getHash(), peer);
+            }
+            return hash;
         }
         catch (Exception e) {
-            /*DEBUG*/ System.out.println("Unable to contact peer : " + ip);
+            System.out.println("Unable to contact peer : " + ip);
             e.printStackTrace();
             return null;
         }

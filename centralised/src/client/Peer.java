@@ -38,7 +38,16 @@ class Peer
      */
     public String getHash()
     {
-        return _ip+":"+_port;
+        return Peer.computeHash(_ip, _port);
+    }
+
+    /**
+     * Retourne le hash unique correspondant
+     * à l'adresse ip et au port donné
+     */
+    public static String computeHash(String ip, int port)
+    {
+        return ip + ":" + port;
     }
 }
 
