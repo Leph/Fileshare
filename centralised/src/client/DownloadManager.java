@@ -29,6 +29,7 @@ class DownloadManager
     }
 
     /**
+     * Initie la connexion avec le tracker
      * Démarre les threads de téléchargement des fichiers
      */
     public void initDownloads()

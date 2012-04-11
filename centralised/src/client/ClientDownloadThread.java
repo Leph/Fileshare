@@ -37,7 +37,7 @@ class ClientDownloadThread extends Thread
                     Integer.parseInt(data[i+1])
                 );
                 if (hash != null && _file.peers.get(hash) == null) {
-                    _file.peers.
+                    //_file.peers.put(hash, );
                 }
             }
 
