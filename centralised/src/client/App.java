@@ -93,9 +93,8 @@ class App
     {
         System.out.println("**** TEST Buffermap");
 
-        Buffermap b1 = new Buffermap(1);
-        assert b1.size() == 1;
-        assert b1.bitSize() == 8;
+        Buffermap b1 = new Buffermap(8);
+        assert b1.getNbPieces() == 8;
         assert b1.getBit(0) == false;
         assert b1.getBit(7) == false;
         assert b1.getBit(4) == false;
@@ -104,9 +103,8 @@ class App
 
         byte [] bb = new byte[1];
         bb[0] = 0x02;
-        Buffermap b2 = new Buffermap(bb);
-        assert b2.size() == 1;
-        assert b2.bitSize() == 8;
+        Buffermap b2 = new Buffermap(bb, 8);
+        assert b2.getNbPieces() == 8;
         assert b2.getBit(0) == false;
         assert b2.getBit(2) == false;
         assert b2.getBit(1) == true;

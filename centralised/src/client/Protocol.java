@@ -215,9 +215,10 @@ class Protocol extends Socket
 
         FileShared file = App.files.getByKey(key);
         int buffermap_size = file.buffermapSize();
+        int nbpieces = file.nbPieces();
         byte[] buffermap_buf = reader.read(offset, buffermap_size);
 
-        return new Buffermap(buffermap_buf);
+        return new Buffermap(buffermap_buf, nbpieces);
     }
 
     /**
@@ -294,9 +295,10 @@ class Protocol extends Socket
         }
 
         int buffermap_size = file.buffermapSize();
+        int nbpieces = file.nbPieces();
         byte[] buffermap_buf = reader.read(offset, buffermap_size);
 
-        return new Buffermap(buffermap_buf);
+        return new Buffermap(buffermap_buf, nbpieces);
     }
 
     /**

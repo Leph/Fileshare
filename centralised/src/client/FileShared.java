@@ -110,15 +110,9 @@ class FileShared extends File
         _piecesize = piecesize;
         _iscomplete = false;
         
-        int buffersize = _size / _piecesize;
-        if ((_size % _piecesize) > 0) buffersize++;
-        if ((buffersize % 8) == 0) {
-            buffersize = buffersize / 8;
-        }
-        else {
-            buffersize = buffersize / 8 + 1;
-        }
-        _buffermap = new Buffermap(buffersize);
+        int nbpieces = _size / _piecesize;
+        if ((_size % _piecesize) > 0) nbpieces++;
+        _buffermap = new Buffermap(nbpieces);
 
         this.peers = new HashMap<String, Buffermap>();
 
@@ -163,7 +157,7 @@ class FileShared extends File
      */
     public int buffermapSize()
     {
-        return _buffermap.size();
+        return _buffermap.getBufferSize();
     }
 
     /**
@@ -195,9 +189,6 @@ class FileShared extends File
      */
     public boolean hasPiece(int num)
     {
-        if (num < 0 || num >= this.nbPieces()) {
-            throw new IllegalArgumentException();
-        }
         if (_iscomplete) {
             return true;
         }
@@ -326,14 +317,7 @@ class FileShared extends File
             _piecesize = Tools.readInt(reader, offset);
             offset += 4;
             //Buffermap
-            int buffer_size = this.nbPieces();
-            if ((buffer_size % 8) == 0) {
-                buffer_size = buffer_size / 8;
-            }
-            else {
-                buffer_size = buffer_size / 8 + 1;
-            }
-            _buffermap = new Buffermap(buffer_size);
+            _buffermap = new Buffermap(this.nbPieces());
             int i;
             for (i=0;i<this.nbPieces();i++) {
                 int index = Tools.readInt(reader, offset);
