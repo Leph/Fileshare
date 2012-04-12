@@ -3,11 +3,7 @@
  * les autres pairs
  */
 
-import java.io.*;
-import java.lang.*;
 import java.util.*;
-import java.net.*;
-import java.io.IOException;
 
 class PeerManager
 {

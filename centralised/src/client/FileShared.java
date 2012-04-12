@@ -5,13 +5,15 @@
 
 import java.io.*;
 import java.util.*;
-import java.lang.*;
 import java.security.*;
 import java.nio.channels.FileChannel;
 
 class FileShared extends File
 {
-    /**
+	// pour eclipse numeroter les classes, pas de effet direct ici
+	private static final long serialVersionUID = 1L;
+
+	/**
      * Clef du fichier
      */
     private String _key;
@@ -502,7 +504,6 @@ class FileShared extends File
             int index_piece = ((int)this.length() - this.headerSize()) / _piecesize;
 
             if (piece.length < _piecesize) {
-                byte[] tmp = new byte[_piecesize];
                 piece = Arrays.copyOf(piece, _piecesize);
             }
             Tools.write(writer, 4 + _key.length() + 4 + 4 + 4*num, index_piece);

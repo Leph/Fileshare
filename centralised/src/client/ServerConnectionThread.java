@@ -3,9 +3,6 @@
  * du pair
  */
 
-import java.io.*;
-import java.lang.*;
-
 class ServerConnectionThread extends Thread
 {
     /**

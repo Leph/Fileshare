@@ -38,8 +38,8 @@ class DownloadManager
         try {
             String ip = (String)App.config.get("trackerIP");
             int port = (Integer)App.config.get("trackerPort");
-            App.downloads.tracker = new Protocol(ip, port);
-            App.downloads.tracker.announce();
+            DownloadManager.tracker = new Protocol(ip, port);
+            DownloadManager.tracker.announce();
         }
         catch (Exception e) {
             System.out.println("Unable to contact tracker");
@@ -54,33 +54,38 @@ class DownloadManager
     }
 
     /**
-     * Recherche et initie le téléchargement
-     * de fichier
+     * Recherche et retourne les informations
+     * le client fait une recherche mais pas forcement telecharge tous les fichiers
+     * dans le resultat de recherche
      * @param filename : nom du fichier à rechercher
      */
-    public void search(String filename)
+    public String[] search(String filename)
     {
-        try {
-            String[] data = App.downloads.tracker.look(filename);
-
-            for (int i=0;i<data.length;i+=4) {
-                String name = data[i];
-                int size = Integer.parseInt(data[i+1]);
-                int piecesize = Integer.parseInt(data[i+2]);
-                String key = data[i+3];
-
-                FileShared file = new FileShared(name, key, size, piecesize);
-                App.files.addFile(file);
-                
-                ClientDownloadThread client = new ClientDownloadThread(file);
-                client.start();
-            }
-        }
-        catch (Exception e) {
-            System.out.println("Unable to search for file : " + filename);
-            e.printStackTrace();
-        }
-
+    	try {
+			return DownloadManager.tracker.look(filename);
+		} catch (IOException e) {
+			e.printStackTrace();
+			return null;
+		}
+    }
+    
+    /**
+     * commence le telechargement
+     * 
+     * @param	un tableau de taille 4 qui contient les informations
+     * d'un fichier a telecharger
+     */
+    public void download(String[] data){
+    	 String name = data[0];
+         int size = Integer.parseInt(data[1]);
+         int piecesize = Integer.parseInt(data[2]);
+         String key = data[3];
+         
+         FileShared file = new FileShared(name, key, size, piecesize);
+         App.files.addFile(file);
+         
+         ClientDownloadThread client = new ClientDownloadThread(file);
+         client.start();
     }
 }
 

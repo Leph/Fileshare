@@ -6,7 +6,6 @@
 import java.io.*;
 import java.net.*;
 import java.util.*;
-import java.lang.*;
 import java.io.IOException;
 import java.util.regex.Pattern;
 import java.util.regex.Matcher;
@@ -447,7 +446,6 @@ class Protocol extends Socket
             if (!file.hasPiece(indexes[i])) {
                 throw new IllegalArgumentException("Protocol invalid index");
             }
-            String tmp1 = i + ":";
             buffer = Tools.concatBytes(buffer, file.readPiece(indexes[i]));
             if (i != indexes.length-1) {
                 String tmp2 = " ";

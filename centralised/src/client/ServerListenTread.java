@@ -3,9 +3,6 @@
  * du pair
  */
 
-import java.io.*;
-import java.lang.*;
-import java.net.*;
 import java.io.IOException;
 
 class ServerListenThread extends Thread

@@ -3,8 +3,6 @@
  * Conteneur des autres classe globales
  */
 
-import java.io.*;
-
 class App
 {
     /**
@@ -42,28 +40,7 @@ class App
         //testBuffermap();
         //testFileShared();
 
-        try {
-            /*
-            Thread autoRefresher = new Thread(new Runnable(){
-                @Override
-                public void run(){
-                    while (true){
-                        try{
-                            wait(((Integer)(App.config.get("timeslice"))).intValue()*1000);
-                            // ->"have $key $BufferMap" au pairs connectes
-                        }catch (Exception ex){
-                            ex.printStackTrace();
-                        }
-                    }
-                }
-            });
-            */
-            //Protocol s = new Protocol("127.0.0.1", 6000);
-            //s.serverReadAndDispatch();4
-        }
-        catch (Exception e) {
-            e.printStackTrace();
-        }
+	    new Interface();
     }
 
     /**

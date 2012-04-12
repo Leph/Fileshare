@@ -3,9 +3,7 @@
  * d'un fichier
  */
 
-import java.io.*;
 import java.util.*;
-import java.lang.*;
 
 class ClientDownloadThread extends Thread
 {
@@ -33,7 +31,7 @@ class ClientDownloadThread extends Thread
     public void retrievePeers()
     {
         try {
-            String[] data = App.downloads.tracker.getFile(_file.getKey());
+            String[] data = DownloadManager.tracker.getFile(_file.getKey());
             for (int i=0;i<data.length;i+=2) {
                 String hash = App.peers.add(
                     data[i], 
@@ -56,8 +54,8 @@ class ClientDownloadThread extends Thread
      */
     public void retrieveBuffermap()
     {
-        Set keys = _file.peers.keySet();
-        Iterator it = keys.iterator();
+        Set<String> keys = _file.peers.keySet();
+        Iterator<String> it = keys.iterator();
         while (it.hasNext()) {
             String hash = (String)it.next();
             Peer peer = App.peers.getByHash(hash);
@@ -81,8 +79,8 @@ class ClientDownloadThread extends Thread
     {
         int max = (Integer)App.config.get("maxDownloadedPieces");
         
-        Set keys = _file.peers.keySet();
-        Iterator it = keys.iterator();
+        Set<String> keys = _file.peers.keySet();
+        Iterator<String> it = keys.iterator();
         try {
             while (it.hasNext()) {
                 String hash = (String)it.next();

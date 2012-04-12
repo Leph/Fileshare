@@ -4,7 +4,6 @@
  */
 
 import java.io.*;
-import java.lang.*;
 import java.util.*;
 
 class FileManager
@@ -100,8 +99,8 @@ class FileManager
         FileShared[] files = new FileShared[_files.size()];
         int i = 0;
 
-        Set keys = _files.keySet();
-        Iterator it = keys.iterator();
+        Set<String> keys = _files.keySet();
+        Iterator<String> it = keys.iterator();
         while (it.hasNext()){
             String key = (String)it.next();
             FileShared f = _files.get(key);
