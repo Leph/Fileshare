@@ -112,7 +112,7 @@ class FileShared extends File
         
         int nbpieces = _size / _piecesize;
         if ((_size % _piecesize) > 0) nbpieces++;
-        _buffermap = new Buffermap(nbpieces);
+        _buffermap = new Buffermap(nbpieces, false);
 
         this.peers = new HashMap<String, Buffermap>();
 
@@ -141,6 +141,19 @@ class FileShared extends File
     public int getPieceSize()
     {
         return _piecesize;
+    }
+
+    /**
+     * Renvoi le nombre de pieces manquantes
+     */
+    public int nbMissingPieces()
+    {
+        if (_iscomplete) {
+            return 0;
+        }
+        else {
+            return _buffermap.getNbMissingPieces();
+        }
     }
 
     /**
@@ -181,6 +194,14 @@ class FileShared extends File
     public byte[] getRawBuffermap()
     {
         return _buffermap.rawBuffer();
+    }
+
+    /**
+     * Renvoi le buffermap du fichier
+     */
+    public Buffermap getBuffermap()
+    {
+        return _buffermap;
     }
 
     /**
@@ -317,7 +338,7 @@ class FileShared extends File
             _piecesize = Tools.readInt(reader, offset);
             offset += 4;
             //Buffermap
-            _buffermap = new Buffermap(this.nbPieces());
+            _buffermap = new Buffermap(this.nbPieces(), false);
             int i;
             for (i=0;i<this.nbPieces();i++) {
                 int index = Tools.readInt(reader, offset);
@@ -348,6 +369,7 @@ class FileShared extends File
         _piecesize = (Integer)App.config.get("pieceSize");
         _key = this.computeHash();
         assert _key.length() == 32;
+        _buffermap = new Buffermap(this.nbPieces(), true);
     }
 
     /**

@@ -165,6 +165,21 @@ class FileManager
     }
 
     /**
+     * Converti le fichier spécifié par sa clef
+     * en fichier complet
+     */
+    public void transformToComplete(String key)
+    {
+        FileShared tmp = this.getByKey(key);
+        if (tmp.nbMissingPieces() != 0) {
+            throw new IllegalArgumentException("File not complete : " + tmp.getName());
+        }
+
+        FileShared complete = tmp.tmpToComplete();
+        _files.put(key, complete);
+    }
+
+    /**
      * Affiche l'état du manager
      * (debugage)
      */
@@ -180,6 +195,14 @@ class FileManager
                 files[i].isComplete()
             );
         }
+    }
+
+    /**
+     * Ajoute le fichier donné au manager
+     */
+    public void addFile(FileShared file)
+    {
+        _files.put(file.getKey(), file);
     }
 }
 

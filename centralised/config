@@ -29,3 +29,6 @@ trackerPort = 6000
 #Adresse IP du tracker
 trackerIP = 127.0.0.1
 
+#Nombre de pieces téléchargés à la fois au maximum
+maxDownloadedPieces = 4
+

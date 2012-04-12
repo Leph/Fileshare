@@ -93,7 +93,7 @@ class App
     {
         System.out.println("**** TEST Buffermap");
 
-        Buffermap b1 = new Buffermap(8);
+        Buffermap b1 = new Buffermap(8, false);
         assert b1.getNbPieces() == 8;
         assert b1.getBit(0) == false;
         assert b1.getBit(7) == false;

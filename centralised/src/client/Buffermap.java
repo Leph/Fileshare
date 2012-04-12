@@ -42,15 +42,15 @@ class Buffermap
     /**
      * Contruit le buffermap connaissant le nombre
      * de pièces
-     * Initialisation de toutes les pieces à 0
+     * Initialisation de toutes les pieces à val
      */
-    public Buffermap(int nbpieces)
+    public Buffermap(int nbpieces, boolean val)
     {
         _buffer = new boolean[nbpieces];
         _missingpieces = nbpieces;
 
         for (int i=0;i<nbpieces;i++) {
-            _buffer[i] = false;
+            _buffer[i] = val;
         }
     }
 
