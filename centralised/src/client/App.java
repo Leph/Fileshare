@@ -30,17 +30,21 @@ class App
      */
     public static void main(String args[])
     {
-        App.config.load("config");
-        App.files.init();
-        App.downloads.initServer();
-        App.downloads.initDownloads();
+	try{        
+		App.config.load("config");
+	       	App.files.init();
+	        App.downloads.initServer();
+	        App.downloads.initDownloads();
 
-        //testConfig();
-        //testFileManager();
-        //testBuffermap();
-        //testFileShared();
+	        //testConfig();
+	        //testFileManager();
+	        //testBuffermap();
+	        //testFileShared();
 
-	    new Interface();
+		new Interface();
+	}catch(Exception ex){
+		ex.printStackTrace();
+	}
     }
 
     /**
