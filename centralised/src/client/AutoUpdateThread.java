@@ -12,11 +12,13 @@ public class AutoUpdateThread extends Thread {
 			s = new Protocol((String)App.config.get("trackerIP"),
 				(Integer)App.config.get("trackerPort"));
 			FileShared[] tmpfiles = App.files.getTmpFiles();
-			while (true){	
-				wait(((Integer)(App.config.get("timeslice"))).intValue()*1000);
-				for (int i=0;i<tmpfiles.length;i++)
-					s.have(tmpfiles[i].getKey());
-				s.update();
+			while (true){
+				synchronized(this){
+					wait(((Integer)(App.config.get("timeslice"))).intValue()*1000);
+					for (int i=0;i<tmpfiles.length;i++)
+						s.have(tmpfiles[i].getKey());
+					s.update();
+ 				}
 			}
 		}catch (Exception ex){
 			ex.printStackTrace();

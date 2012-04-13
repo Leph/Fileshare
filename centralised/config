@@ -24,7 +24,7 @@ socketServerTimeout = 60000
 listenPort = 60000
 
 #Port découte du tracker
-trackerPort = 60011
+trackerPort = 60034
 
 #Adresse IP du tracker
 trackerIP = 147.210.18.237
@@ -32,3 +32,5 @@ trackerIP = 147.210.18.237
 #Nombre de pieces téléchargés à la fois au maximum
 maxDownloadedPieces = 4
 
+#Duree de faire un update en second
+timeslice = 10
