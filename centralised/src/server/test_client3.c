@@ -10,7 +10,7 @@
 #include <arpa/inet.h>
 
 #define HASH_MAX_VALUE 1777 
-#define PORT 60011 
+#define PORT 60034 
 
 int main(int argc,char **argv){
     int sock;
@@ -19,9 +19,9 @@ int main(int argc,char **argv){
         perror("socket");
         return -1;
     }
-    struct hostent *hostinfo=NULL;
+    //struct hostent *hostinfo=NULL;
     memset(& adresse, 0, sizeof (struct sockaddr_in));
-    gethostbyname(argv[1]);
+    //gethostbyname(argv[1]);
     adresse.sin_family = AF_INET;
     adresse.sin_port = htons(PORT);
     adresse.sin_addr.s_addr =htonl(INADDR_ANY);

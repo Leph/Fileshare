@@ -20,10 +20,6 @@
 #define BUFFER_SIZE 1024 
 
 
-/********************VARIABLE GLOBALE*********************/
-//pthread_mutext_t mutex_commandLine=PTHREAD_MUTEX_INITIALIZER;
-//pthread_mutext_t mutex_hachage=PTHREAD_MUTEX_INITIALIZER;
-
 
 
 pthread_t tab_thread[THREADS_NUMBER];

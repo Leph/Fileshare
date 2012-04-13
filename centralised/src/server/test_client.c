@@ -10,7 +10,7 @@
 #include <arpa/inet.h>
 
 #define HASH_MAX_VALUE 1777 
-#define PORT 60011 
+#define PORT 60034 
 
 int main(int argc,char **argv){
     int sock;
@@ -19,9 +19,9 @@ int main(int argc,char **argv){
         perror("socket");
         return -1;
     }
-    struct hostent *hostinfo=NULL;
+    //struct hostent *hostinfo=NULL;
     memset(& adresse, 0, sizeof (struct sockaddr_in));
-    gethostbyname(argv[1]);
+    //gethostbyname(argv[1]);
     adresse.sin_family = AF_INET;
     adresse.sin_port = htons(PORT);
     adresse.sin_addr.s_addr = /*inet_addr("147.210.19.195");*/htonl(INADDR_ANY);
@@ -30,21 +30,21 @@ int main(int argc,char **argv){
         perror("connect");
         return -1;
     }
-    char * buffer="announce listen 4444 have [  \"Le Seigneur Des Anneaux.avi\"   699000000  1024   hkj234f5s2h6fd7f        \"Pulp Fiction.mkv\"        701000000   1024   hkj234d5s2j6fd7p \"Batman - The Dark Knight.mp4\" 1400000000 2048 h4k2l6h6gf4oas9    \"rapportRE203.pdf\" 2300000 1024 h3p4n1c8p0l2  \"music.mp3\" 4380000 1024 j5l2bvfg34f9]"; 
+    char * outputMessage="announce listen 4444 seed [] leech [Le_Seigneur_Des_Anneaux.avi   699000000  1024   hkj234f5s2h6fd7f        Pulp_Fiction.mkv        701000000   1024   hkj234d5s2j6fd7p Batman_The_Dark_Knight.mp4 1400000000 2048 h4k2l6h6gf4oas9    rapportRE203.pdf 2300000 1024 h3p4n1c8p0l2  music.mp3 4380000 1024 j5l2bvfg34f9]"; 
 //	printf("%s\n",buffer);
-	if(send(sock,buffer,strlen(buffer),0)<0){
+	if(send(sock,outputMessage,strlen(outputMessage),0)<0){
 		perror("send");
 		exit(errno);
 	}
-	char * bubu=malloc(5);
-	recv(sock,bubu,5,0);
+	char * inputMessage=malloc(5);
+	recv(sock,inputMessage,5,0);
 	
-	printf("%s\n",bubu);
-	 char *alInputText = "getfile hkj234f5s2h6fd7f";
-	send(sock,alInputText,strlen(alInputText),0);
-	char * caca = malloc(100);
-	memset(caca,0,100);
-	recv(sock,caca,100,0);
-	printf(" %s\n",caca);
+	printf("%s\n",inputMessage);
+	 char *outputMessage2 = "getfile hkj234f5s2h6fd7f";
+	send(sock,outputMessage2,strlen(outputMessage2),0);
+	char * intputMessage2 = malloc(100);
+	memset(intputMessage2,0,100);
+	recv(sock,intputMessage2,100,0);
+	printf(" %s\n",intputMessage2);
 	return 0;
 }

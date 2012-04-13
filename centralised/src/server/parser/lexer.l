@@ -10,7 +10,7 @@
 
 
 number                	[0-9]*
-filename              	[ a-zA-Z0-9_\-]*\.[a-zA-Z0-9]*
+filename              	[a-zA-Z0-9_\-]+\.[a-zA-Z0-9]+
 key                  	[a-zA-Z0-9]*[a-z][a-zA-Z0-9]*		      	
             
 %%
@@ -26,9 +26,9 @@ key                  	[a-zA-Z0-9]*[a-z][a-zA-Z0-9]*
 "seed"			{ return TSEED; }
 "leech"			{ return TLEECH; }
 
-{filename}              { yylval.stringValue=strdup(yytext); return FILENAME; }
-{number}                { yylval.intValue=atoi(yytext); return NUMBER; }
-{key}                   { yylval.stringValue=strdup(yytext); return KEY; }
+{filename}              { yylval.stringValue=strdup(yytext); printf("filename\n"); return FILENAME; }
+{number}                { yylval.intValue=atoi(yytext); printf("number\n"); return NUMBER; }
+{key}                   { yylval.stringValue=strdup(yytext); printf("key\n"); return KEY; }
 
 "<"		{ return('<'); }
 ">"		{ return('>'); }
