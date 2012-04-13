@@ -41,13 +41,28 @@ commande
 | getfile_commande
 | update_commande
 ;
- 
+
 announce_commande
-: TANNOUNCE TLISTEN NUMBER THAVE '[' fileinfo_list ']'
+: TANNOUNCE TLISTEN NUMBER seed_d leech_d
+{	
+	command.type = ANNOUNCE;
+	command.port = $<intValue>3;
+}
+| TANNOUNCE TLISTEN NUMBER leech_d seed_d
 {
 	command.type = ANNOUNCE;
 	command.port = $<intValue>3;
 }
+;
+
+seed_d
+: TSEED '[' fileinfo_list ']'
+| TSEED '[' ']'
+;
+
+leech_d
+: TLEECH '[' fileinfo_list ']'
+| TLEECH '[' ']'
 ;
 
 fileinfo_list
@@ -56,12 +71,12 @@ fileinfo_list
 ;
 
 fileinfo
-: '"'FILENAME'"' NUMBER NUMBER KEY
+: FILENAME NUMBER NUMBER KEY
 {
-	command.fileNames[command.filesNumber] = strdup($<stringValue>2);
-        command.lengths[command.filesNumber] = $<intValue>4;
-        command.pieceSize[command.filesNumber] = $<intValue>5;
-        command.keys[command.filesNumber] = strdup($<stringValue>6);
+	command.fileNames[command.filesNumber] = strdup($<stringValue>1);
+        command.lengths[command.filesNumber] = $<intValue>2;
+        command.pieceSize[command.filesNumber] = $<intValue>3;
+        command.keys[command.filesNumber] = strdup($<stringValue>4);
         command.filesNumber++;
 }
 ;

@@ -12,15 +12,6 @@ int init_tracker(){
 	return E_FAILURE;
 }
 
-//int add_key_nameKey(struct tracker *tracker,char * keyFile,char * keyName){
-	
-	//il faut calculer a l'aide de la fonction de hachage la position dnas la table keyName a partir du nom de fichier et mettre a
-	//cette position la position de keyFile dans la table hashi afin de pouvoir faire des recherche a partir du nom de fichier.
-
-	//les cles md5 font 128 bits on peut dont les mettre dans deux long long
-//	lst_add_tail(tracker->nameKey,key);
-//	return 0;
-//}
 
 int add_key(char *key,char *peer,char *titre,int size,int pieceSize){
 	struct lelement *temp=search_mainTrackerElement(key);
@@ -36,9 +27,9 @@ int add_key(char *key,char *peer,char *titre,int size,int pieceSize){
 		llm_add_mainTrackerElement(temp,peer,key,titre,size,pieceSize,time2);
 	//	llm_debug_mainTrackerElement(temp);
 		lnk_add_head(tracker->hashi,temp);
-		return E_SUCCESS;
+		return EXIT_SUCCESS;
 	}
-	return E_FAILURE;
+	return EXIT_FAILURE;
 		
 }
 int update_key(char *key,char * addr){
@@ -70,8 +61,8 @@ struct lelement * search_mainTrackerElement(char *keyFile){
 		lst_init_empty(&(elt->noms));
 	}
 }*/
-int init_searchTrackerElement(struct searchTrackerElement *elt){
-	elt = malloc(sizeof(struct searchTrackerElement));
+int init_searchTrackerElement(struct searchTrackerElement *element){
+	element = malloc(sizeof(struct searchTrackerElement));
 	return 0;
 }
 

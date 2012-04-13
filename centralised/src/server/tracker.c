@@ -1,5 +1,10 @@
 #include"tracker.h"
 
+
+pthread_mutex_t mutex_commandLine;
+pthread_mutex_t mutex_tracker;
+
+
 int yyparse();                                                                  
 int cree_socket_stream ()
 {
@@ -12,6 +17,7 @@ int cree_socket_stream ()
     memset(& adresse, 0, sizeof (struct sockaddr_in));
     adresse.sin_family = AF_INET;
     adresse.sin_port = htons(PORT);
+    printf("%d\n",PORT);
     adresse.sin_addr.s_addr =htonl(INADDR_ANY);
    if (bind(sock, (struct sockaddr *) & adresse,
                  sizeof(struct sockaddr_in)) < 0) {
@@ -154,7 +160,6 @@ int update_tracker(int sock,struct commandLine * clone,char  * addri){
 }
 
 void* traite_connexion (void* socka){
-    initCommandLine();
     int sock = (int) socka;
     struct sockaddr_in adresse;
     socklen_t           longueur;
@@ -163,9 +168,16 @@ void* traite_connexion (void* socka){
     memset(&adresse,0,sizeof(struct sockaddr_in));
     longueur = sizeof(struct sockaddr_in);
     recv(sock,buffer,BUFFER_SIZE,0);
-    globalInputText= strdup(buffer);
+
+    //DEBUT SECTION CRITIQUE (commandLine)
+    pthread_mutex_lock(&mutex_commandLine);
+    initCommandLine();
+    globalInputText = strdup(buffer);
     yyparse();
+    free(globalInputText);
     struct commandLine * clone = cloneCommandLine();
+    pthread_mutex_unlock(&mutex_commandLine);
+    //FIN SECTION CRITIQUE (commandLine)
     affiche(clone);
 	
     if (getpeername(sock,(struct sockaddr *)& adresse,& longueur) < 0) {
@@ -175,7 +187,8 @@ void* traite_connexion (void* socka){
     }
 	//on garde l adresse  ip sous forme de chaine de caractere
 	char *addri=strdup(inet_ntoa(adresse.sin_addr));
-
+    //DEBUT SECTION CRITIQUE (tracker)
+    pthread_mutex_lock(&mutex_tracker);	
 	switch(clone->type){
 		case ANNOUNCE:		
 			announce_tracker(sock,clone,addri);	
@@ -193,7 +206,9 @@ void* traite_connexion (void* socka){
 			printf("c'est pas normal");
 	}
 	lnk_debug_mainTrackerElement(tracker->hashi);
-	/*
+    pthread_mutex_unlock(&mutex_tracker);
+    //FIN SECTION CRITIQUE (tracker)
+/*
     sprintf(buffer, "IP = %s, Port = %u \n",
              inet_ntoa(adresse.sin_addr),
              ntohs(adresse.sin_port));
@@ -203,10 +218,9 @@ void* traite_connexion (void* socka){
     //write(sock, "Votre adresse : ", 16);
     //write(sock, buffer, 10);
     int ret=1;
-    free(globalInputText);
     free(clone);
     free(addri);
-    freeCommandLine();
+    //freeCommandLine();
     close(sock);
     return (void*)ret;
 }
@@ -246,7 +260,11 @@ int thread_libre(){
 
 
 int main(void){
+    	pthread_mutex_init(&mutex_commandLine,NULL);
+	pthread_mutex_init(&mutex_tracker,NULL);
 	init_tracker();
 	serveur_tcp();
+	pthread_mutex_destroy(&mutex_commandLine);
+	pthread_mutex_destroy(&mutex_tracker);
 	return 0;
 }
