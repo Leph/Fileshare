@@ -4,13 +4,10 @@ import java.io.BufferedReader;
 class Interface{
 	
     public Interface(){
-    	AutoUpdateThread autoUp = new AutoUpdateThread();
+    		AutoUpdateThread autoUp = new AutoUpdateThread();
 		// listen thread
-		DownloadManager dm = new DownloadManager();
-		dm.initServer();
-		dm.initDownloads();
-		
-		
+		DownloadManager dm = App.downloads;
+			
 		System.out.println("Connection OK.....");
 		System.out.println("Welcome");
 		autoUp.start();

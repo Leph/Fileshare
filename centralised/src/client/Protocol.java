@@ -113,6 +113,7 @@ class Protocol extends Socket
             }
         }
         query += "]";
+	System.out.println(query);
         this.writeBytes(query.getBytes());
 
         InputStream reader_tmp = this.getInputStream();
