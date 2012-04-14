@@ -31,8 +31,8 @@ class Buffermap
         for (int i=0;i<nbpieces;i++) {
             int numByte = i/8;
             int numBit = i%8;
-            byte mask = (byte)((byte)0x01 << (byte)numBit);
-            _buffer[i] = (byte)(mask & buffer[numByte]) > 0 ? true : false;
+            byte mask = (byte)((byte)0x80 >> (byte)numBit);
+            _buffer[i] = ((mask & buffer[numByte]) != 0x00) ? true : false;
             if (!_buffer[i]) {
                 _missingpieces++;
             }
@@ -97,9 +97,13 @@ class Buffermap
             byte tmp = 0x00;
             for (int j=0;j<8;j++) {
                 if (i*8+j < _buffer.length) {
-                    if (_buffer[i*8+j]) tmp += 1;
+                    if (_buffer[i*8+j]) {
+                        tmp += 1;
+                    }
                 }
-                tmp = (byte)(tmp << (byte)1);
+                if (j < 7) {
+                    tmp = (byte)(tmp << (byte)1);
+                }
             }
             buffer[i] = tmp;
         }
@@ -193,6 +197,21 @@ class Buffermap
         }
 
         return indexes;
+    }
+
+    /**
+     * Affiche le Buffermap
+     * debug
+     */
+    public void print()
+    {
+        System.out.print(_buffer.length + " |");
+        for (int i=0;i<_buffer.length;i++)
+        {
+            if (_buffer[i]) System.out.print("1");
+            else System.out.print("0");
+        }
+        System.out.println("|");
     }
 }
 

@@ -12,7 +12,7 @@ tmpDir = tmp
 downloadDir = downloads
 
 #Taille des pièces (ne pas modifier)
-pieceSize = 2048
+pieceSize = 1024
 
 #Timeout en miliseconde des communication clientes sockets
 socketClientTimeout = 60000
@@ -21,10 +21,10 @@ socketClientTimeout = 60000
 socketServerTimeout = 60000
 
 #Port d'écoute des autres pairs
-listenPort = 60000
+listenPort = 6000
 
 #Port découte du tracker
-trackerPort = 6000
+trackerPort = 5000
 
 #Adresse IP du tracker
 trackerIP = 127.0.0.1

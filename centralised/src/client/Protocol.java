@@ -108,7 +108,7 @@ class Protocol extends Socket
         }
         query += "] leech [";
         for (int i=0;i<tmpfiles.length;i++) {
-            query += completefiles[i].getKey();
+            query += tmpfiles[i].getKey();
             if (i != tmpfiles.length-1) {
                 query += " ";
             }
@@ -245,6 +245,7 @@ class Protocol extends Socket
         
         ArrayList<String> groups = new ArrayList<String>();
         
+        System.out.println("  begin 0");
         int offset = readBytesToPattern(reader, 0, _getpieces_begin, null, groups);
         if (!groups.get(0).equals(key)) {
             throw new IOException("Protocol error");
@@ -256,7 +257,9 @@ class Protocol extends Socket
 
         byte[][] data = new byte[indexes.length][];
 
+        System.out.println("  repeat read " + offset);
         for (int index=0;index<indexes.length;index++) {
+            System.out.println("  try read index " + indexes[index] + " offset : " + offset);
             int tmp = readBytesToPattern(reader, offset, _getpieces_repeat, _getpieces_end, groups);
             if (tmp == -1) {
                 throw new IOException("Protocol error");
@@ -266,7 +269,10 @@ class Protocol extends Socket
             }
             groups.remove(0);
             offset += tmp;
+            System.out.println("  try read piece : " + offset + " " + piecesize);
             data[index] = reader.read(offset, piecesize);
+            offset += piecesize;
+            System.out.println("  ok : " + offset);
         }
 
         return data;
@@ -426,6 +432,9 @@ class Protocol extends Socket
         FileShared file = App.files.getByKey(key);
 
         String query = "have " + key + " ";
+        System.out.println(query);
+        file.getBuffermap().print();
+        System.out.println(file.getRawBuffermap().length);
         byte[] buffer = Tools.concatBytes(query.getBytes(), file.getRawBuffermap());
     
         this.writeBytes(buffer);
@@ -440,15 +449,21 @@ class Protocol extends Socket
     {
         FileShared file = App.files.getByKey(key);
         
-        String query = "data " + key + "[";
+        String query = "data " + key + " [";
         byte[] buffer = query.getBytes();
 
         for (int i=0;i<indexes.length;i++) {
             if (!file.hasPiece(indexes[i])) {
                 throw new IllegalArgumentException("Protocol invalid index");
             }
-            String tmp1 = i + ":";
+            String tmp1 = indexes[i] + ":";
+            buffer = Tools.concatBytes(buffer, tmp1.getBytes());
             buffer = Tools.concatBytes(buffer, file.readPiece(indexes[i]));
+            if (indexes[i] == file.nbPieces()-1) {
+                int piecesize = (Integer)App.config.get("pieceSize");
+                int last = file.getSize() - indexes[i]*piecesize;
+                buffer = Tools.concatBytes(buffer, new byte[piecesize - last]);
+            }
             if (i != indexes.length-1) {
                 String tmp2 = " ";
                 buffer = Tools.concatBytes(buffer, tmp2.getBytes());

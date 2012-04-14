@@ -101,7 +101,7 @@ class RandomInputStream
     private void fillAvailable() throws IOException
     {
         int len = _input.available();
-        if (_buffer.length - _pos <= len + 1) {
+        while (_buffer.length - _pos <= len + 1) {
             _buffer = Arrays.copyOf(_buffer, _buffer.length*2);
         }
         if (len > 0) {

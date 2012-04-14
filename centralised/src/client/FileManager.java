@@ -47,7 +47,12 @@ class FileManager
 
         for (int i=0;i<scan.length;i++) {
             FileShared f = new FileShared(scan[i].getName());
-            _files.put(f.getKey(), f);
+            if (_files.get(f.getKey()) == null) {
+                _files.put(f.getKey(), f);
+            }
+            else {
+                throw new IllegalArgumentException("Duplicated complete file : " + f.getName());
+            }
         }
     }
 
@@ -67,7 +72,12 @@ class FileManager
 
         for (int i=0;i<scan.length;i++) {
             FileShared f = new FileShared(scan[i].getName());
-            _files.put(f.getKey(), f);
+            if (_files.get(f.getKey()) == null) {
+                _files.put(f.getKey(), f);
+            }
+            else {
+                throw new IllegalArgumentException("Duplicated tmp file : " + f.getName());
+            }
         }
     }
 
