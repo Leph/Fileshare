@@ -1,6 +1,6 @@
 #ifndef HACHAGE_H_ 
 #define HACHAGE_H_
-#include"linkedList/lk.h"
+#include"lk.h"
 #include<sys/types.h>
 #include<netinet/in.h>
 #include<netdb.h>
@@ -11,7 +11,7 @@
 
 #define HASH_MAX_VALUE 17 
 #define MAX_WITHOUT_UPDATE_TIME 600 
-#define PORT 60034 
+#define PORT 60011 
 
 struct mainTrackerElement{
 	struct link* peers; // liste des differents peers sous forme de chaine de caratere du type [$IP1:$PORT1 $IP2:$PORT2]
@@ -39,7 +39,8 @@ int init_tracker();
 //int add_key_nameKey(struct tracker *,char *,char *);
 int init_searchTrackerElement(struct searchTrackerElement *);
 struct lelement * search_mainTrackerElement(char *keyFile);
-int update_key(char *, char *);
+
+int update_key(char *key,char *addr);
 
 int add_key(char *key,char *peer,char *titre,int size,int pieceSize);
 #endif
