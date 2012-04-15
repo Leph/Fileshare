@@ -1,26 +1,19 @@
 #include"hachage.h"
 #include<time.h>
 
+
+
 int init_tracker(){
 	tracker = malloc(sizeof(struct tracker));
 	if(NULL!=tracker){
 		tracker->hashi = lnk_init_empty2();
-//		tracker->nameKey = malloc(sizeof(struct link*)*HASH_MAX_VALUE);
 	}
 	if(tracker->hashi!=NULL)
 		return E_SUCCESS;
 	return E_FAILURE;
 }
 
-//int add_key_nameKey(struct tracker *tracker,char * keyFile,char * keyName){
-	
-	//il faut calculer a l'aide de la fonction de hachage la position dnas la table keyName a partir du nom de fichier et mettre a
-	//cette position la position de keyFile dans la table hashi afin de pouvoir faire des recherche a partir du nom de fichier.
 
-	//les cles md5 font 128 bits on peut dont les mettre dans deux long long
-//	lst_add_tail(tracker->nameKey,key);
-//	return 0;
-//}
 
 int add_key(char *key,char *peer,char *titre,int size,int pieceSize){
 	struct lelement *temp=search_mainTrackerElement(key);
