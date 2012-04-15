@@ -30,14 +30,26 @@ class App
     /**
      * Fonction main
      */
-    public static void main(String args[])
+    public static void main(String[] args)
     {
-        App.config.load("config");
+        String configfile;
+        if (args.length == 0) {
+            configfile = "config";
+        }
+        else if (args.length == 1) {
+            configfile = args[0];
+        }
+        else {
+            System.out.println("Bad usage : [config_file]");
+            return;
+        }
+
+        App.config.load(configfile);
         App.files.init();
         //App.downloads.initServer();
         App.downloads.initDownloads();
 
-        App.downloads.search("Claire.JPG");
+        //App.downloads.search("Claire.JPG");
 
         //testConfig();
         //testFileManager();
