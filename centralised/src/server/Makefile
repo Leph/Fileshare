@@ -8,7 +8,7 @@ myparser.o: myparser.h
 	$(CC)  -c myparser.c $(CFLAGS)
 
 tracker.o: hachage.o myparser.o lex.yy.o y.tab.o tracker.c myparser.h 
-	$(CC)  hachage.o myparser.o y.tab.o lex.yy.o -c tracker.c $(CFLAGS)
+	$(CC)  -c tracker.c $(CFLAGS)
 
 hachage.o: hachage.c hachage.h lk.o
 	$(CC) lk.o -c hachage.c $(CFLAGS)
