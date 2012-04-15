@@ -11,7 +11,7 @@ tracker.o: hachage.o myparser.o lex.yy.o y.tab.o tracker.c myparser.h
 	$(CC)  -c tracker.c $(CFLAGS)
 
 hachage.o: hachage.c hachage.h lk.o
-	$(CC) lk.o -c hachage.c $(CFLAGS)
+	$(CC) -c hachage.c $(CFLAGS)
 
 
 y.tab.o : 
