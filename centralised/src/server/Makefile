@@ -1,27 +1,27 @@
 CC=gcc 
 CFLAGS= -Wall -W -g -lpthread
 
-exec :	tracker.o lk.o hachage.o myparser.o lk.h
-	$(CC) -o  exec hachage.o tracker.o y.tab.o lex.yy.o lk.o myparser.o -lpthread
+exec :	tracker.o list.o treatment.o myparser.o list.h
+	$(CC) -o exec treatment.o tracker.o y.tab.o lex.yy.o list.o myparser.o -lpthread
 
 myparser.o: myparser.h 
-	$(CC)  -c myparser.c $(CFLAGS)
+	$(CC) -c myparser.c $(CFLAGS)
 
-tracker.o: hachage.o myparser.o lex.yy.o y.tab.o tracker.c myparser.h 
-	$(CC)  -c tracker.c $(CFLAGS)
+tracker.o: treatment.o myparser.o lex.yy.o y.tab.o tracker.c myparser.h 
+	$(CC) -c tracker.c $(CFLAGS)
 
-hachage.o: hachage.c hachage.h lk.o
-	$(CC) -c hachage.c $(CFLAGS)
+treatment.o: treatment.c treatment.h list.o
+	$(CC) -c treatment.c $(CFLAGS)
 
 
 y.tab.o : 
 	$(CC) -c y.tab.c $(CFLAGS)
 
 lex.yy.o :
-	$(CC) -c lex.yy.c $(CFLAGS)
+	$(CC) -w -c lex.yy.c $(CFLAGS)
 
-lk.o:	lk.c lk.h
-	$(CC) -c lk.c $(CFLAGS)
+lk.o:	list.c list.h
+	$(CC) -c list.c $(CFLAGS)
 
 clean:
 	rm *.o
