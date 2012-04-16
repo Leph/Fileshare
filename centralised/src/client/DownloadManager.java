@@ -54,33 +54,32 @@ class DownloadManager
     }
 
     /**
-     * Recherche et initie le téléchargement
-     * de fichier
+     * Recherche un fichier auprès du tracker
      * @param filename : nom du fichier à rechercher
      */
-    public void search(String filename)
+    public String[] search(String filename)
     {
         try {
             String[] data = App.downloads.tracker.look(filename);
-
-            for (int i=0;i<data.length;i+=4) {
-                String name = data[i];
-                int size = Integer.parseInt(data[i+1]);
-                int piecesize = Integer.parseInt(data[i+2]);
-                String key = data[i+3];
-
-                FileShared file = new FileShared(name, key, size, piecesize);
-                App.files.addFile(file);
-                
-                ClientDownloadThread client = new ClientDownloadThread(file);
-                client.start();
-            }
+            return data;
         }
         catch (Exception e) {
             System.out.println("Unable to search for file : " + filename);
             e.printStackTrace();
+            return new String[0];
         }
 
+    }
+
+    /**
+     * Commence le téléchargement du fichier donné
+     */
+    public void startDownload(String name, String key, int size, int piecesize)
+    {
+        FileShared file = new FileShared(name, key, size, piecesize);
+        App.files.addFile(file);
+        ClientDownloadThread client = new ClientDownloadThread(file);
+        client.start();
     }
 }
 

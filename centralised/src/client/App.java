@@ -46,10 +46,10 @@ class App
 
         App.config.load(configfile);
         App.files.init();
-        //App.downloads.initServer();
+        App.downloads.initServer();
         App.downloads.initDownloads();
 
-        //App.downloads.search("Claire.JPG");
+        CLI.init();
 
         //testConfig();
         //testFileManager();

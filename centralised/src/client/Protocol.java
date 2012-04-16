@@ -245,7 +245,6 @@ class Protocol extends Socket
         
         ArrayList<String> groups = new ArrayList<String>();
         
-        System.out.println("  begin 0");
         int offset = readBytesToPattern(reader, 0, _getpieces_begin, null, groups);
         if (!groups.get(0).equals(key)) {
             throw new IOException("Protocol error");
@@ -257,9 +256,7 @@ class Protocol extends Socket
 
         byte[][] data = new byte[indexes.length][];
 
-        System.out.println("  repeat read " + offset);
         for (int index=0;index<indexes.length;index++) {
-            System.out.println("  try read index " + indexes[index] + " offset : " + offset);
             int tmp = readBytesToPattern(reader, offset, _getpieces_repeat, _getpieces_end, groups);
             if (tmp == -1) {
                 throw new IOException("Protocol error");
@@ -269,10 +266,8 @@ class Protocol extends Socket
             }
             groups.remove(0);
             offset += tmp;
-            System.out.println("  try read piece : " + offset + " " + piecesize);
             data[index] = reader.read(offset, piecesize);
             offset += piecesize;
-            System.out.println("  ok : " + offset);
         }
 
         return data;
@@ -432,9 +427,6 @@ class Protocol extends Socket
         FileShared file = App.files.getByKey(key);
 
         String query = "have " + key + " ";
-        System.out.println(query);
-        file.getBuffermap().print();
-        System.out.println(file.getRawBuffermap().length);
         byte[] buffer = Tools.concatBytes(query.getBytes(), file.getRawBuffermap());
     
         this.writeBytes(buffer);

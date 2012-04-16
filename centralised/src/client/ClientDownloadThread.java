@@ -18,7 +18,7 @@ class ClientDownloadThread extends Thread
      * Créer le thread de téléchargement
      * @param : le fichier a télécharger
      */
-    ClientDownloadThread(FileShared file)
+    public ClientDownloadThread(FileShared file)
     {
         super();
         _file = file;
@@ -32,7 +32,6 @@ class ClientDownloadThread extends Thread
      */
     public void retrievePeers()
     {
-        System.out.println("Retrieve peers : " + _file.getName());
         try {
             String[] data = App.downloads.tracker.getFile(_file.getKey());
             for (int i=0;i<data.length;i+=2) {
@@ -40,9 +39,7 @@ class ClientDownloadThread extends Thread
                     data[i], 
                     Integer.parseInt(data[i+1])
                 );
-                System.out.println("get : " + hash);
                 if (hash != null && _file.peers.get(hash) == null) {
-                    System.out.println("save : " + hash);
                     _file.peers.put(hash, new Buffermap(_file.nbPieces(), false));
                 }
             }
@@ -59,7 +56,6 @@ class ClientDownloadThread extends Thread
      */
     public void retrieveBuffermap()
     {
-        System.out.println("Retrieve buffermap : " + _file.getName());
         Set keys = _file.peers.keySet();
         Iterator it = keys.iterator();
         while (it.hasNext()) {
@@ -68,8 +64,6 @@ class ClientDownloadThread extends Thread
             try {
                 Buffermap buffermap = peer.socket.interested(_file.getKey());
                 _file.peers.put(hash, buffermap);
-                System.out.println("get from : " + hash);
-                buffermap.print();
             }
             catch (Exception e) {
                 System.out.println("Unable to retrieve buffermap : " + hash);
@@ -85,8 +79,6 @@ class ClientDownloadThread extends Thread
      */
     public boolean retrievePieces()
     {
-        System.out.println("-- New Retrieve piece : " + _file.getName());
-        _file.getBuffermap().print();
         int max = (Integer)App.config.get("maxDownloadedPieces");
         
         Set keys = _file.peers.keySet();
@@ -94,28 +86,17 @@ class ClientDownloadThread extends Thread
         try {
             while (it.hasNext()) {
                 String hash = (String)it.next();
-                System.out.println("try dl from peer : " + hash);
                 Buffermap buffermap = _file.peers.get(hash);
-                buffermap.print();
                 int[] indexes = _file.getBuffermap().getDownloadPieces(buffermap, max);
-                System.out.println("possibles piece : " + indexes.length);
-                for (int i=0;i<indexes.length;i++) {
-                    System.out.println("> : " + indexes[i]);
-                }
 
                 if (indexes.length > 0) {
                     Peer peer = App.peers.getByHash(hash);
-                    System.out.println("try download!");
                     byte[][] data = peer.socket.getPieces(_file.getKey(), indexes);
-                    System.out.println("Donnée dl : " + data.length);
                     for (int i=0;i<indexes.length;i++) {
-                        System.out.println("write piece " + indexes[i]);
                         _file.writePiece(data[i], indexes[i]);
                     }
-                    _file.getBuffermap().print();
                     return true;
                 }
-                System.out.println("pas de pièce");
             }
         }
         catch (Exception e) {
@@ -127,7 +108,7 @@ class ClientDownloadThread extends Thread
 
     /**
      * Fonction principale du thread
-     *
+     * Télécharge le fichier
      */
     public void run()
     {
