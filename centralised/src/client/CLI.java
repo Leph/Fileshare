@@ -46,7 +46,7 @@ class CLI extends Thread
         System.out.println("help               Display this message");
         System.out.println("peers              Show all known peers");
         System.out.println("search filename    Search for file filename");
-        System.out.println("stats              Display statistics on downloading files");
+        System.out.println("stats              Display statistics");
         System.out.println("exit               Quit");
     }
 
@@ -130,9 +130,9 @@ class CLI extends Thread
      */
     private void stats()
     {
-        FileShared[] files = App.files.getTmpFiles();
+        FileShared[] files = App.files.getAllFiles();
         if (files.length > 0) {
-            System.out.println("Downloading files ("+files.length+") :");
+            System.out.println("Files ("+files.length+") :");
         }
         else {
             System.out.println("No file");
@@ -143,7 +143,8 @@ class CLI extends Thread
                 "["+i+"] "+
                 files[i].getName()+" "+
                 files[i].getSize()+" "+
-                files[i].getKey()+" "
+                files[i].getKey()+" "+
+                ((files[i].isComplete()) ? "[complete]" : "")
             );
             int havepieces = files[i].nbPieces()-files[i].nbMissingPieces();
             int totalpieces = files[i].nbPieces();
@@ -158,10 +159,20 @@ class CLI extends Thread
             float downrate = files[i].downrate.getRate();
             System.out.println(
                 "    "+
-                "Downrate "+
+                "Download rate "+
                 downrate+" Ko/s"
             );
+            
+            float uprate = files[i].uprate.getRate();
+            System.out.println(
+                "    "+
+                "Upload rate "+
+                uprate+" Ko/s"
+            );
         }
+
+        System.out.println("Global Download rate " + App.files.globalDownrate() + " Ko/s");
+        System.out.println("Global Upload rate   " + App.files.globalUprate() + " Ko/s");
     }
 
     /**

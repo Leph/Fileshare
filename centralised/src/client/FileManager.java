@@ -175,6 +175,36 @@ class FileManager
     }
 
     /**
+     * Renvoi la vitesse global de télécharment
+     */
+    public float globalDownrate()
+    {
+        FileShared[] files = this.getAllFiles();
+        float downrate = 0;
+
+        for (int i=0;i<files.length;i++) {
+            downrate += files[i].downrate.getRate();
+        }
+
+        return downrate;
+    }
+
+    /**
+     * Renvoi la vitesse global de téléversement
+     */
+    public float globalUprate()
+    {
+        FileShared[] files = this.getAllFiles();
+        float uprate = 0;
+
+        for (int i=0;i<files.length;i++) {
+            uprate += files[i].uprate.getRate();
+        }
+
+        return uprate;
+    }
+
+    /**
      * Converti le fichier spécifié par sa clef
      * en fichier complet
      */

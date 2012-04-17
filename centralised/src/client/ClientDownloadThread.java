@@ -45,7 +45,7 @@ class ClientDownloadThread extends Thread
             }
         }
         catch (Exception e) {
-            System.out.println("Unable to retrieve peers : " + _file.getName());
+            System.out.println("Unable to retrieve peers from tracker : " + _file.getName());
             e.printStackTrace();
         }
     }
@@ -71,6 +71,7 @@ class ClientDownloadThread extends Thread
             catch (Exception e) {
                 System.out.println("Unable to retrieve buffermap : " + hash);
                 e.printStackTrace();
+                peer.closeConnection();
             }
         }
     }
@@ -86,16 +87,16 @@ class ClientDownloadThread extends Thread
         
         Set keys = _file.peers.keySet();
         Iterator it = keys.iterator();
-        try {
-            while (it.hasNext()) {
-                String hash = (String)it.next();
-                Buffermap buffermap = _file.peers.get(hash);
-                int[] indexes = _file.getBuffermap().getDownloadPieces(buffermap, max);
-                if (indexes.length > 0) {
-                    Peer peer = App.peers.getByHash(hash);
-                    if (peer == null) {
-                        continue;
-                    }
+        while (it.hasNext()) {
+            String hash = (String)it.next();
+            Buffermap buffermap = _file.peers.get(hash);
+            int[] indexes = _file.getBuffermap().getDownloadPieces(buffermap, max);
+            if (indexes.length > 0) {
+                Peer peer = App.peers.getByHash(hash);
+                if (peer == null) {
+                    continue;
+                }
+                try {
                     byte[][] data = peer.socket.getPieces(_file.getKey(), indexes);
                     for (int i=0;i<indexes.length;i++) {
                         _file.writePiece(data[i], indexes[i]);
@@ -103,11 +104,12 @@ class ClientDownloadThread extends Thread
                     }
                     return true;
                 }
+                catch (Exception e) {
+                    System.out.println("Unable to download pieces : " + _file.getName());
+                    e.printStackTrace();
+                    peer.closeConnection();
+                }
             }
-        }
-        catch (Exception e) {
-            System.out.println("Unable to download pieces : " + _file.getName());
-            e.printStackTrace();
         }
         return false;
     }

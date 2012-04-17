@@ -38,4 +38,6 @@ maxPeerConnections = 5
 #Nombre de milisecondes utilisé pou rcalculer le débit
 rateMeanTime = 1000
 
+#Temps entre chaque mise à jour d tracker et des pairs en milisecondes
+updateTime = 10000
 

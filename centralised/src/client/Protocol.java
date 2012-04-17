@@ -451,7 +451,9 @@ class Protocol extends Socket
             }
             String tmp1 = indexes[i] + ":";
             buffer = Tools.concatBytes(buffer, tmp1.getBytes());
-            buffer = Tools.concatBytes(buffer, file.readPiece(indexes[i]));
+            byte[] data = file.readPiece(indexes[i]);
+            file.uprate.tick(data.length);
+            buffer = Tools.concatBytes(buffer, data);
             if (indexes[i] == file.nbPieces()-1) {
                 int piecesize = (Integer)App.config.get("pieceSize");
                 int last = file.getSize() - indexes[i]*piecesize;

@@ -73,7 +73,25 @@ class Peer
      */
     public boolean isConnected()
     {
-        return (socket != null) && socket.isConnected();
+        return (socket != null) && 
+            socket.isConnected() && 
+            !socket.isInputShutdown() && 
+            !socket.isOutputShutdown() &&
+            !socket.isClosed();
+    }
+
+    /**
+     * Ferme la connexion
+     */
+    public void closeConnection()
+    {
+        try {
+            this.socket.close();
+        }
+        catch (Exception e) {
+            System.out.println("Unable to close connection : " + this.getHash());
+            e.printStackTrace();
+        }
     }
 
     /**

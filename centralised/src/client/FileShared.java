@@ -43,6 +43,12 @@ class FileShared extends File
     public RateCounter downrate;
 
     /**
+     * Compteur de débit pour les
+     * fichier en cours de téléversement (eg upload)
+     */
+    public RateCounter uprate;
+
+    /**
      * Ensemble de pair possédant le fichier
      * La clef représente le hash distinctif du pair
      * dans le PeerManager
@@ -77,6 +83,7 @@ class FileShared extends File
         this.peers = new HashMap<String, Buffermap>();
 
         this.downrate = new RateCounter();
+        this.uprate = new RateCounter();
 
         if (name.endsWith((String)App.config.get("tmpExtension"))) {
             _iscomplete = false;
@@ -125,6 +132,7 @@ class FileShared extends File
         this.peers = new HashMap<String, Buffermap>();
         
         this.downrate = new RateCounter();
+        this.uprate = new RateCounter();
 
         this.initHeaderTmpFile();
     }
