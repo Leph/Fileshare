@@ -207,18 +207,19 @@ class Protocol extends Socket
         RandomInputStream reader = new RandomInputStream(reader_tmp);
         
         ArrayList<String> groups = new ArrayList<String>();
-    
+        
         int offset = readBytesToPattern(reader, 0, _interested, null, groups);
         if (!groups.get(0).equals(key)) {
             throw new IOException("Protocol error");
         }
-
+        
         FileShared file = App.files.getByKey(key);
         int buffermap_size = file.buffermapSize();
         int nbpieces = file.nbPieces();
         byte[] buffermap_buf = reader.read(offset, buffermap_size);
 
-        return new Buffermap(buffermap_buf, nbpieces);
+        Buffermap buffermap = new Buffermap(buffermap_buf, nbpieces);
+        return buffermap;
     }
 
     /**

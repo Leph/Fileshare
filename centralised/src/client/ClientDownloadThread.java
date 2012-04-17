@@ -39,7 +39,7 @@ class ClientDownloadThread extends Thread
                     data[i], 
                     Integer.parseInt(data[i+1])
                 );
-                if (hash != null && _file.peers.get(hash) == null) {
+                if (_file.peers.get(hash) == null) {
                     _file.peers.put(hash, new Buffermap(_file.nbPieces(), false));
                 }
             }
@@ -61,6 +61,9 @@ class ClientDownloadThread extends Thread
         while (it.hasNext()) {
             String hash = (String)it.next();
             Peer peer = App.peers.getByHash(hash);
+            if (peer == null) {
+                continue;
+            }
             try {
                 Buffermap buffermap = peer.socket.interested(_file.getKey());
                 _file.peers.put(hash, buffermap);
@@ -88,12 +91,15 @@ class ClientDownloadThread extends Thread
                 String hash = (String)it.next();
                 Buffermap buffermap = _file.peers.get(hash);
                 int[] indexes = _file.getBuffermap().getDownloadPieces(buffermap, max);
-
                 if (indexes.length > 0) {
                     Peer peer = App.peers.getByHash(hash);
+                    if (peer == null) {
+                        continue;
+                    }
                     byte[][] data = peer.socket.getPieces(_file.getKey(), indexes);
                     for (int i=0;i<indexes.length;i++) {
                         _file.writePiece(data[i], indexes[i]);
+                        _file.downrate.tick(data[i].length);
                     }
                     return true;
                 }
@@ -128,8 +134,9 @@ class ClientDownloadThread extends Thread
                 this.retrieveBuffermap();
             }
         }
-        System.out.println("Complete : " + _file.getName());
+        System.out.println("Completing " + _file.getName() + " ...");
         App.files.transformToComplete(_file.getKey());
+        System.out.println("Complete : " + _file.getName());
     }
 }
 

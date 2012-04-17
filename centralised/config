@@ -12,7 +12,7 @@ tmpDir = tmp
 downloadDir = downloads
 
 #Taille des pièces (ne pas modifier)
-pieceSize = 1024
+pieceSize = 2048
 
 #Timeout en miliseconde des communication clientes sockets
 socketClientTimeout = 60000
@@ -30,5 +30,12 @@ trackerPort = 5000
 trackerIP = 127.0.0.1
 
 #Nombre de pieces téléchargés à la fois au maximum
-maxDownloadedPieces = 4
+maxDownloadedPieces = 8
+
+#Nombre maximum de connexion bers d'autres pairs
+maxPeerConnections = 5
+
+#Nombre de milisecondes utilisé pou rcalculer le débit
+rateMeanTime = 1000
+
 

@@ -37,6 +37,12 @@ class FileShared extends File
     private boolean _iscomplete;
 
     /**
+     * Compteur de débit pour les
+     * fichier en cours de téléchargement
+     */
+    public RateCounter downrate;
+
+    /**
      * Ensemble de pair possédant le fichier
      * La clef représente le hash distinctif du pair
      * dans le PeerManager
@@ -69,6 +75,8 @@ class FileShared extends File
         }
 
         this.peers = new HashMap<String, Buffermap>();
+
+        this.downrate = new RateCounter();
 
         if (name.endsWith((String)App.config.get("tmpExtension"))) {
             _iscomplete = false;
@@ -115,6 +123,8 @@ class FileShared extends File
         _buffermap = new Buffermap(nbpieces, false);
 
         this.peers = new HashMap<String, Buffermap>();
+        
+        this.downrate = new RateCounter();
 
         this.initHeaderTmpFile();
     }
@@ -494,7 +504,7 @@ class FileShared extends File
         if (piece.length > _piecesize) {
             throw new IllegalArgumentException();
         }
-       
+            
         try {
             RandomAccessFile writer_tmp = new RandomAccessFile(this, "rw");
             FileChannel writer = writer_tmp.getChannel();

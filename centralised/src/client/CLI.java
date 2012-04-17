@@ -44,7 +44,9 @@ class CLI extends Thread
         System.out.println("Available commands :");
         System.out.println("files              Show all known files");
         System.out.println("help               Display this message");
+        System.out.println("peers              Show all known peers");
         System.out.println("search filename    Search for file filename");
+        System.out.println("stats              Display statistics on downloading files");
         System.out.println("exit               Quit");
     }
 
@@ -124,6 +126,77 @@ class CLI extends Thread
     }
 
     /**
+     * Affiche les statistiques
+     */
+    private void stats()
+    {
+        FileShared[] files = App.files.getTmpFiles();
+        if (files.length > 0) {
+            System.out.println("Downloading files ("+files.length+") :");
+        }
+        else {
+            System.out.println("No file");
+        }
+
+        for (int i=0;i<files.length;i++) {
+            System.out.println(
+                "["+i+"] "+
+                files[i].getName()+" "+
+                files[i].getSize()+" "+
+                files[i].getKey()+" "
+            );
+            int havepieces = files[i].nbPieces()-files[i].nbMissingPieces();
+            int totalpieces = files[i].nbPieces();
+            System.out.println(
+                "    "+
+                "Pieces "+
+                havepieces+"/"+
+                totalpieces+" "+
+                Math.floor(10000*havepieces/totalpieces)/100+"%"
+            );
+
+            float downrate = files[i].downrate.getRate();
+            System.out.println(
+                "    "+
+                "Downrate "+
+                downrate+" Ko/s"
+            );
+        }
+    }
+
+    /**
+     * Affiche les pairs
+     */
+    private void peers()
+    {
+        Peer[] peers = App.peers.getAllPeers();
+        int nbconnection = App.peers.nbConnectedPeers();
+
+        if (peers.length > 0) {
+            System.out.println(
+                "Known peers (" +
+                nbconnection +
+                "/" +
+                peers.length +
+                ") :"
+            );
+        }
+        else {
+            System.out.println("No peer");
+        }
+
+        for (int i=0;i<peers.length;i++)
+        {
+            System.out.println(
+                "["+i+"] "+
+                peers[i].getIP()+":"+
+                peers[i].getPort()+" "+
+                (peers[i].isConnected() ? "[connected]" : "")
+            );
+        }
+    }
+
+    /**
      * Fonction principale du thread
      */
     public void run()
@@ -142,7 +215,9 @@ class CLI extends Thread
 
             if (argc == 1 && args[0].equals("files")) this.files();
             else if (argc == 1 && args[0].equals("help")) this.help();
+            else if (argc == 1 && args[0].equals("peers")) this.peers();
             else if (argc == 2 && args[0].equals("search")) this.search(args[1]);
+            else if (argc == 1 && args[0].equals("stats")) this.stats();
             else if (argc == 1 && args[0].equals("exit")) break;
             else {
                 System.out.println("Unknown command : " + command);
@@ -151,6 +226,7 @@ class CLI extends Thread
         }
 
         System.out.println("Exiting");
+        System.exit(0);
     }
 
     /**

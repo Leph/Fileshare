@@ -31,8 +31,9 @@ class Buffermap
         for (int i=0;i<nbpieces;i++) {
             int numByte = i/8;
             int numBit = i%8;
-            byte mask = (byte)((byte)0x80 >> (byte)numBit);
-            _buffer[i] = ((mask & buffer[numByte]) != 0x00) ? true : false;
+            byte mask = (byte)((0x80 & 0xff)>>> numBit);
+            _buffer[i] = (((0xff & mask) & (0xff & buffer[numByte])) != 0x00) 
+                ? true : false;
             if (!_buffer[i]) {
                 _missingpieces++;
             }
@@ -180,7 +181,7 @@ class Buffermap
 
         int k = 0;
         for (int i=0;i<_buffer.length;i++) {
-            if (!_buffer[i] && pair._buffer[i]) {
+            if (!this.getBit(i) && pair.getBit(i)) {
                 indexes[k] = i;
                 k++;
             }

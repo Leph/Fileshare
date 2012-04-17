@@ -25,11 +25,29 @@ class Peer
     /**
      * Créer et initialise de pair
      */
-    public Peer(String ip, int port) throws UnknownHostException, IOException
+    public Peer(String ip, int port) 
     {
         _ip = ip;
         _port = port;
-        socket = new Protocol(ip, port);
+    }
+
+    /**
+     * Connecte ou reconnecte la socket interne
+     * Renvoi true si la connexion est établie, false sinon
+     */
+    public boolean connect()
+    {
+        try {
+            socket = new Protocol(_ip, _port);
+            return true;
+        }
+        catch (Exception e) {
+            System.out.println("Unable to contact peer : " + 
+                this.getHash()
+            );
+            e.printStackTrace();
+            return false;
+        }
     }
 
     /**
@@ -48,6 +66,30 @@ class Peer
     public static String computeHash(String ip, int port)
     {
         return ip + ":" + port;
+    }
+
+    /**
+     * Indique si la conexion intenre est active
+     */
+    public boolean isConnected()
+    {
+        return (socket != null) && socket.isConnected();
+    }
+
+    /**
+     * Renvoi l'adresse ip
+     */
+    public String getIP()
+    {
+        return _ip;
+    }
+
+    /**
+     * Renvoi le port
+     */
+    public int getPort()
+    {
+        return _port;
     }
 }
 

@@ -32,12 +32,16 @@ class PeerManager
     public Peer getByHash(String hash)
     {
         Peer peer = _peers.get(hash);
-        if (peer.socket.isConnected()) {
-            return _peers.get(hash);
+        if (peer.isConnected()) {
+            return peer;
         }
         else {
-            _peers.remove(peer.getHash());
-            return null;
+            if (this.canConnectPeer() && peer.connect()) {
+                return peer;
+            }
+            else {
+                return null;
+            }
         }
     }
 
@@ -50,18 +54,66 @@ class PeerManager
      */
     public String add(String ip, int port)
     {
-        try {
-            String hash = Peer.computeHash(ip, port);
-            if (_peers.get(hash) == null) {
-                Peer peer = new Peer(ip, port);
-                _peers.put(peer.getHash(), peer);
-            }
-            return hash;
+        String hash = Peer.computeHash(ip, port);
+        if (_peers.get(hash) == null) {
+            Peer peer = new Peer(ip, port);
+            _peers.put(peer.getHash(), peer);
         }
-        catch (Exception e) {
-            System.out.println("Unable to contact peer : " + ip);
-            e.printStackTrace();
-            return null;
+
+        return hash;
+    }
+
+    /**
+     * Retourne tout les pairs connus
+     */
+    public Peer[] getAllPeers()
+    {
+        Peer[] peers = new Peer[_peers.size()];
+        int i = 0;
+
+        Set keys = _peers.keySet();
+        Iterator it = keys.iterator();
+        while (it.hasNext()){
+            String hash = (String)it.next();
+            peers[i] = _peers.get(hash);
+            i++;
+        }
+
+        return peers;
+    }
+
+    /**
+     * Retourne le nombre connexion actuellement ouverte
+     * vers d'autres pairs en mode client
+     */
+    public int nbConnectedPeers()
+    {
+        Peer[] peers = this.getAllPeers();
+        int count = 0;
+
+        for (int i=0;i<peers.length;i++) {
+            if (peers[i].isConnected()) {
+                count++;
+            }
+        }
+
+        return count;
+    }
+
+    /**
+     * Renvoi true si le nombre maximum de pairs
+     * connecté n'est pas atteint, false sinon
+     */
+    private boolean canConnectPeer()
+    {
+        int max = (Integer)App.config.get("maxPeerConnections");
+        int nb = this.nbConnectedPeers();
+
+        if (nb < max) {
+            return true;
+        }
+        else {
+            return false;
         }
     }
 
