@@ -2,6 +2,8 @@
  * Représente et implémente un buffermap
  */
 
+import java.util.Random;
+
 class Buffermap
 {
     /**
@@ -148,6 +150,7 @@ class Buffermap
      * Renvoi au maximum nb index de
      * pièces manquantes
      */
+    /*
     public int[] getMissingPieces(int nb)
     {
         int min = Math.min(nb, _missingpieces);
@@ -166,6 +169,7 @@ class Buffermap
 
         return indexes;
     }
+    */
 
     /**
      * Renvoi au maximum nb pièces que le buffermap 
@@ -179,8 +183,13 @@ class Buffermap
 
         int[] indexes = new int[nb];
 
+        Random generator = new Random();
         int k = 0;
-        for (int i=0;i<_buffer.length;i++) {
+        int i = generator.nextInt() % _buffer.length;
+        if (i < 0) {
+            i = -i; 
+        }
+        for (int j=0;j<_buffer.length;j++) {
             if (!this.getBit(i) && pair.getBit(i)) {
                 indexes[k] = i;
                 k++;
@@ -188,11 +197,15 @@ class Buffermap
             if (k >= nb) {
                 break;
             }
+            i++;
+            if (i >= _buffer.length) {
+                i = 0;
+            }
         }
         if (k < nb) {
             int[] tmp = new int[k];
-            for (int i=0;i<k;i++) {
-                tmp[i] = indexes[i];
+            for (int j=0;j<k;j++) {
+                tmp[j] = indexes[j];
             }
             indexes = tmp;
         }

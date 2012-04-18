@@ -35,7 +35,7 @@ class RateCounter
      * Founit au compteur le débit échangé
      * @param : la quantité de donnée échangée
      */
-    public void tick(int datasize)
+    synchronized public void tick(int datasize)
     {
         long current = System.currentTimeMillis();
         int mean = (Integer)App.config.get("rateMeanTime");
@@ -58,9 +58,17 @@ class RateCounter
      * Renvoi la valeur actuelle du débit
      * en Ko/s
      */
-    public float getRate()
+    synchronized public float getRate()
     {
-        return _rate;
+        long current = System.currentTimeMillis();
+        int mean = (Integer)App.config.get("rateMeanTime");
+
+        if (current - _timestart > 2*mean) {
+            return 0;
+        }
+        else {
+            return _rate;
+        }
     }
 }
 

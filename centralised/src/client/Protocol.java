@@ -339,6 +339,9 @@ class Protocol extends Socket
         readBytesToPattern(reader, 0, _update, null, null);
     }
 
+    /**
+     * Lis et parse une commande serveur
+     */
     public void serverReadAndDispatch() throws IOException
     {
         String msg_interested = "interested";
@@ -403,7 +406,11 @@ class Protocol extends Socket
             if (b == -1) throw new IOException("Connection ended");
             if ((char)b != ' ') throw new IOException("Protocol error");
 
-            FileShared file = App.files.getByKey(key);
+            FileShared file = App.files.hasByKey(key);
+            if (file == null) {
+                return;
+            }
+
             int len = 0;
             int buffermap_size = file.buffermapSize();
             byte[] buffermap_buf = new byte[buffermap_size];

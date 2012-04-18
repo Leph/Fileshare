@@ -6,6 +6,7 @@
 import java.io.*;
 import java.lang.*;
 import java.util.*;
+import java.util.concurrent.*;
 
 class FileManager
 {
@@ -19,7 +20,7 @@ class FileManager
      */
     public FileManager()
     {
-        _files = new HashMap<String, FileShared>();
+        _files = new ConcurrentHashMap<String, FileShared>();
     }
 
     /**
@@ -100,6 +101,15 @@ class FileManager
         else {
             return _files.get(key);
         }
+    }
+
+    /**
+     * Retourne un fichier par sa clef si présent
+     * dans le manager sinon null
+     */
+    public FileShared hasByKey(String key)
+    {
+        return _files.get(key);
     }
 
     /**

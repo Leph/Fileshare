@@ -8,6 +8,7 @@ import java.lang.*;
 import java.util.*;
 import java.net.*;
 import java.io.IOException;
+import java.util.concurrent.*;
 
 class PeerManager
 {
@@ -21,7 +22,7 @@ class PeerManager
      */
     public PeerManager()
     {
-        _peers = new HashMap<String, Peer>();
+        _peers = new ConcurrentHashMap<String, Peer>();
     }
 
     /**
@@ -29,7 +30,7 @@ class PeerManager
      * Test si la connexion est toujours valide
      * @return Peer ou null si le pair demandé n'est pas joignable
      */
-    public Peer getByHash(String hash)
+    synchronized public Peer getByHash(String hash)
     {
         Peer peer = _peers.get(hash);
         if (peer.isConnected()) {
@@ -52,7 +53,7 @@ class PeerManager
      * @return String contenant le hash du Peer
      * si succès, renvoi null sinon
      */
-    public String add(String ip, int port)
+    synchronized public String add(String ip, int port)
     {
         String hash = Peer.computeHash(ip, port);
         if (_peers.get(hash) == null) {
@@ -66,7 +67,7 @@ class PeerManager
     /**
      * Retourne tout les pairs connus
      */
-    public Peer[] getAllPeers()
+    synchronized public Peer[] getAllPeers()
     {
         Peer[] peers = new Peer[_peers.size()];
         int i = 0;
@@ -120,7 +121,7 @@ class PeerManager
     /**
      * Supprime un pair du manager par son hash
      */
-    public void del(String hash)
+    synchronized public void del(String hash)
     {
         _peers.remove(hash);
     }

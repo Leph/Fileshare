@@ -8,6 +8,7 @@ import java.util.*;
 import java.lang.*;
 import java.security.*;
 import java.nio.channels.FileChannel;
+import java.util.concurrent.*;
 
 class FileShared extends File
 {
@@ -80,7 +81,7 @@ class FileShared extends File
             throw new IllegalArgumentException();
         }
 
-        this.peers = new HashMap<String, Buffermap>();
+        this.peers = new ConcurrentHashMap<String, Buffermap>();
 
         this.downrate = new RateCounter();
         this.uprate = new RateCounter();
@@ -129,7 +130,7 @@ class FileShared extends File
         if ((_size % _piecesize) > 0) nbpieces++;
         _buffermap = new Buffermap(nbpieces, false);
 
-        this.peers = new HashMap<String, Buffermap>();
+        this.peers = new ConcurrentHashMap<String, Buffermap>();
         
         this.downrate = new RateCounter();
         this.uprate = new RateCounter();

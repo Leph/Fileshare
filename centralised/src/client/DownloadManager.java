@@ -31,6 +31,7 @@ class DownloadManager
     /**
      * Initie la connexion avec le tracker
      * Démarre les threads de téléchargement des fichiers
+     * et de mise à jour
      */
     public void initDownloads()
     {
@@ -51,6 +52,9 @@ class DownloadManager
             ClientDownloadThread client = new ClientDownloadThread(files[i]);
             client.start();
         }
+
+        UpdateThread update = new UpdateThread();
+        update.start();
     }
 
     /**

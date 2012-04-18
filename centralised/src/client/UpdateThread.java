@@ -18,7 +18,7 @@ class UpdateThread extends Thread
 
     /**
      * Fonction principale du thread
-     * Mise à jour régulière du tracker et des pairs
+     * Mise à jour régulière du tracker
      */
     public void run()
     {
@@ -28,6 +28,14 @@ class UpdateThread extends Thread
                 Thread.sleep(delay);
             }
             catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            try {
+                App.downloads.tracker.update();
+            } 
+            catch (Exception e)
+            {
+                System.out.println("Unable to update tracker");
                 e.printStackTrace();
             }
         } while (true);

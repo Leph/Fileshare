@@ -89,18 +89,19 @@ class ClientDownloadThread extends Thread
         Iterator it = keys.iterator();
         while (it.hasNext()) {
             String hash = (String)it.next();
+            Peer peer = App.peers.getByHash(hash);
+            if (peer == null) {
+                continue;
+            }
             Buffermap buffermap = _file.peers.get(hash);
             int[] indexes = _file.getBuffermap().getDownloadPieces(buffermap, max);
             if (indexes.length > 0) {
-                Peer peer = App.peers.getByHash(hash);
-                if (peer == null) {
-                    continue;
-                }
                 try {
                     byte[][] data = peer.socket.getPieces(_file.getKey(), indexes);
                     for (int i=0;i<indexes.length;i++) {
                         _file.writePiece(data[i], indexes[i]);
                         _file.downrate.tick(data[i].length);
+                        peer.downrate.tick(data[i].length);
                     }
                     return true;
                 }

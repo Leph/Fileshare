@@ -166,7 +166,7 @@ class CLI extends Thread
             float uprate = files[i].uprate.getRate();
             System.out.println(
                 "    "+
-                "Upload rate "+
+                "Upload rate   "+
                 uprate+" Ko/s"
             );
         }
@@ -203,6 +203,15 @@ class CLI extends Thread
                 peers[i].getIP()+":"+
                 peers[i].getPort()+" "+
                 (peers[i].isConnected() ? "[connected]" : "")
+            );
+            if (!peers[i].isConnected()) {
+                continue;
+            }
+            float downrate = peers[i].downrate.getRate();
+            System.out.println(
+                "    "+
+                "Download rate "+
+                downrate+" Ko/s"
             );
         }
     }

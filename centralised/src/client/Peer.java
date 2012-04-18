@@ -23,12 +23,18 @@ class Peer
     public Protocol socket;
 
     /**
+     * Compteur de débit descendant
+     */
+    public RateCounter downrate;
+
+    /**
      * Créer et initialise de pair
      */
     public Peer(String ip, int port) 
     {
         _ip = ip;
         _port = port;
+        this.downrate = new RateCounter();
     }
 
     /**
