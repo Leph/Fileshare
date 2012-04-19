@@ -62,6 +62,7 @@ class ClientDownloadThread extends Thread
             String hash = (String)it.next();
             Peer peer = App.peers.getByHash(hash);
             if (peer == null) {
+                _file.peers.remove(hash);
                 continue;
             }
             try {
@@ -84,6 +85,7 @@ class ClientDownloadThread extends Thread
     public boolean retrievePieces()
     {
         int max = (Integer)App.config.get("maxDownloadedPieces");
+        boolean hasdownloaded = false;
         
         Set keys = _file.peers.keySet();
         Iterator it = keys.iterator();
@@ -91,6 +93,7 @@ class ClientDownloadThread extends Thread
             String hash = (String)it.next();
             Peer peer = App.peers.getByHash(hash);
             if (peer == null) {
+                _file.peers.remove(hash);
                 continue;
             }
             Buffermap buffermap = _file.peers.get(hash);
@@ -103,7 +106,7 @@ class ClientDownloadThread extends Thread
                         _file.downrate.tick(data[i].length);
                         peer.downrate.tick(data[i].length);
                     }
-                    return true;
+                    hasdownloaded = true;
                 }
                 catch (Exception e) {
                     System.out.println("Unable to download pieces : " + _file.getName());
@@ -112,7 +115,7 @@ class ClientDownloadThread extends Thread
                 }
             }
         }
-        return false;
+        return hasdownloaded;
     }
 
     /**
@@ -128,7 +131,7 @@ class ClientDownloadThread extends Thread
         while (_file.nbMissingPieces() > 0) {
             if (!this.retrievePieces()) {
                 try {
-                    Thread.sleep(1000);
+                    Thread.sleep(5000);
                 }
                 catch (InterruptedException e) {
                     e.printStackTrace();
