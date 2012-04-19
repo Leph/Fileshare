@@ -31,6 +31,7 @@ class UpdateThread extends Thread
                 e.printStackTrace();
             }
             try {
+                App.downloads.connectTracker();
                 App.downloads.tracker.update();
             } 
             catch (Exception e)

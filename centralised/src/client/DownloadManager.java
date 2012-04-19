@@ -29,6 +29,30 @@ class DownloadManager
     }
 
     /**
+     * Recontact le serveur
+     */
+    public void connectTracker()
+    {
+        if (
+            App.downloads.tracker == null ||
+            !App.downloads.tracker.isConnected() ||
+            App.downloads.tracker.isInputShutdown() ||
+            App.downloads.tracker.isOutputShutdown() ||
+            App.downloads.tracker.isClosed()
+        ) {
+            try {
+                String ip = (String)App.config.get("trackerIP");
+                int port = (Integer)App.config.get("trackerPort");
+                App.downloads.tracker = new Protocol(ip, port);
+            }
+            catch (Exception e) {
+                System.out.println("Unable to Recontact tracker");
+                e.printStackTrace();
+            }
+        }
+    }
+
+    /**
      * Initie la connexion avec le tracker
      * Démarre les threads de téléchargement des fichiers
      * et de mise à jour
@@ -64,6 +88,7 @@ class DownloadManager
     public String[] search(String filename)
     {
         try {
+            App.downloads.connectTracker();
             String[] data = App.downloads.tracker.look(filename);
             return data;
         }

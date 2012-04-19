@@ -33,6 +33,7 @@ class ClientDownloadThread extends Thread
     public void retrievePeers()
     {
         try {
+            App.downloads.connectTracker();
             String[] data = App.downloads.tracker.getFile(_file.getKey());
             for (int i=0;i<data.length;i+=2) {
                 String hash = App.peers.add(
